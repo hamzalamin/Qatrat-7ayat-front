@@ -7,6 +7,7 @@ import DonationProcessSection from "./pages/Home/DonationProcess";
 import HeroSection from "./pages/Home/Hero";
 import LatestArticles from "./pages/Home/LatestArticle";
 import LoginPage from "./pages/Auth/login/Login";
+import RegistrationForm from "./pages/Auth/Register/Register";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           </>
         } />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegistrationForm />} />
       </Routes>
       <Footer />
     </Router>

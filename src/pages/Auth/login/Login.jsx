@@ -9,7 +9,6 @@ import {
   Users,
   Calendar,
 } from "lucide-react";
-import logo from "../../../../src/assets/icons/qatrat-7ayat-logo.ico";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,12 +29,6 @@ const LoginPage = () => {
       <div className="max-w-6xl mx-auto px-4 flex gap-8 items-center">
         <div className="w-full lg:w-1/2 space-y-8">
           <div className="text-center lg:text-right">
-            <div className="flex items-center justify-center lg:justify-start mb-6">
-              <img src={logo} alt="" className="w-16 h-16" />
-              <span className="mr-3 text-2xl font-bold font-cairo text-neutral-800">
-                قطرة حياة
-              </span>
-            </div>
             <h1 className="text-3xl font-bold font-cairo text-neutral-800 mb-2">
               مرحباً بعودتك
             </h1>
@@ -135,7 +128,7 @@ const LoginPage = () => {
           </div>
         </div>
 
-        <div className="hidden lg:block w-1/2 mt-48">
+        <div className="hidden lg:block w-1/2 mt-36">
           <div className="relative">
             <div className="rounded-2xl overflow-hidden shadow-xl h-full">
               <img
