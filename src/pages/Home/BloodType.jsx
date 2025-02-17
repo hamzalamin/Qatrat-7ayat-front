@@ -72,16 +72,15 @@ const BloodType = () => {
   ];
 
   return (
-    <section dir="rtl" className="bg-neutral-50 py-12 md:py-16 px-4 border-t border-neutral-200">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold font-cairo text-neutral-800 inline-flex items-center">
-            <Droplet className="w-8 h-8 text-primary-500 ml-2" strokeWidth={2.5} fill="#FFEEEE" />
-            <span>توافق فصائل الدم</span>
+    <section dir="rtl" className="py-12 bg-white ">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="text-right mb-8 ">
+          <h2 className="text-3xl font-cairo font-bold text-neutral-800 mb-2">
+            توافق فصائل الدم
           </h2>
-          <p className="mt-3 text-neutral-600 font-ibm max-w-2xl mx-auto">
-            تعرف على فصيلة دمك ومع من تتوافق للتبرع أو الاستقبال، المعرفة قد تنقذ حياتك          </p>
-        </div>
+          <p className="text-neutral-600 font-kufi">
+          تعرف على فصيلة دمك ومع من تتوافق للتبرع أو الاستقبال، المعرفة قد تنقذ حياتك          </p>
+          </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-3 md:gap-4 mb-8">
           {bloodTypes.map((blood) => (
