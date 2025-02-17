@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X, Home, Heart, Users, Calendar, Bell, Search } from 'lucide-react';
+import { Menu, X, Home, Book, Users, ClipboardList, Bell, Search } from 'lucide-react';
 import logo from '../../../assets/images/qatrat-7ayat-logo.jpg';
 
 const Navbar = () => {
@@ -8,9 +8,9 @@ const Navbar = () => {
 
   const menuItems = [
     { title: "الرئيسية", icon: <Home className="w-5 h-5" /> },
-    { title: "التبرع", icon: <Heart className="w-5 h-5" /> },
+    { title: "المقالات", icon: <Book className="w-5 h-5" /> },
     { title: "المتبرعين", icon: <Users className="w-5 h-5" /> },
-    { title: "المواعيد", icon: <Calendar className="w-5 h-5" /> }
+    { title: "الطلبات", icon: <ClipboardList className="w-5 h-5" /> }
   ];
 
   return (

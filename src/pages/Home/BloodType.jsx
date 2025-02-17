@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Droplet, ArrowRight, Info } from 'lucide-react';
+import { Droplet, Info } from 'lucide-react';
 
 const BloodType = () => {
   const [selectedBloodType, setSelectedBloodType] = useState(null);
@@ -119,10 +119,8 @@ const BloodType = () => {
           ))}
         </div>
 
-        {/* Selected Blood Type Information */}
         {selectedBloodType && (
           <div className="mt-8 bg-white rounded-2xl shadow-lg overflow-hidden">
-            {/* Header */}
             <div className="p-4 md:p-6 border-b border-neutral-100" 
                 style={{ 
                   backgroundColor: bloodTypes.find(b => b.type === selectedBloodType).color + '15'
@@ -149,10 +147,8 @@ const BloodType = () => {
               </div>
             </div>
             
-            {/* Compatibility Map */}
             <div className="p-4 md:p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Can Donate To */}
                 <div className="space-y-4">
                   <h4 className="text-lg font-bold font-cairo text-neutral-800 flex items-center">
                     <div className="w-5 h-5 text-primary-500" /> 
@@ -185,18 +181,17 @@ const BloodType = () => {
                   </div>
                 </div>
                 
-                {/* Can Receive From */}
                 <div className="space-y-4">
                   <h4 className="text-lg font-bold font-cairo text-neutral-800 flex items-center">
                     <div className="w-5 h-5 text-secondary-500 rotate-180" /> 
                     يمكن استقبال من:
                   </h4>
-                  <div className="flex flex-wrap gap-2 ">
+                  <div className="flex flex-wrap gap-2 mr-4 ">
                     {bloodTypes
                       .find(b => b.type === selectedBloodType)
                       .canReceiveFrom.map(type => (
                         <div key={`receive-${type}`} 
-                          className="flex items-center px-3 py-2 mr-5 rounded-lg"
+                          className="flex items-center px-3 py-2 rounded-lg"
                           style={{ 
                             backgroundColor: bloodTypes.find(b => b.type === type).color + '15',
                             borderColor: bloodTypes.find(b => b.type === type).color,
@@ -240,7 +235,6 @@ const BloodType = () => {
           </div>
         )}
         
-        {/* Call to Action */}
         <div className="mt-12 text-center">
           <button className="px-8 py-3 bg-primary-500 hover:bg-primary-600 text-white font-cairo font-bold rounded-full transition-colors duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2 mx-auto">
             <span>تعرف على فصيلة دمك</span>
