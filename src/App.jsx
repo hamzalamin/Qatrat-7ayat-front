@@ -22,6 +22,9 @@ function App() {
             <BloodType />
             <LatestArticles />
             <DonationProcessSection />
+            {/* <Route path="/articles" element={<Articles />} /> */}
+            {/* <Route path="/donors" element={<Donors />} /> */}
+            {/* <Route path="/requests" element={<Requests />} /> */}
           </>
         } />
         <Route path="/login" element={<LoginPage />} />

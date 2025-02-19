@@ -6,12 +6,13 @@ import logo from '../../../assets/images/qatrat-7ayat-logo.jpg';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const navigate = useNavigate(); 
 
   const menuItems = [
-    { title: "الرئيسية", icon: <Home className="w-5 h-5" /> },
-    { title: "المقالات", icon: <Book className="w-5 h-5" /> },
-    { title: "المتبرعين", icon: <Users className="w-5 h-5" /> },
-    { title: "الطلبات", icon: <ClipboardList className="w-5 h-5" /> }
+    { path:"/", title: "الرئيسية", icon: <Home className="w-5 h-5" /> },
+    { path:"/articles", title: "المقالات", icon: <Book className="w-5 h-5" /> },
+    { path:"/donors", title: "المتبرعين", icon: <Users className="w-5 h-5" /> },
+    { path:"/requests", title: "الطلبات", icon: <ClipboardList className="w-5 h-5" /> }
   ];
 
   return (
@@ -33,6 +34,7 @@ const Navbar = () => {
             {menuItems.map((item) => (
               <button
                 key={item.title}
+                onClick={() => navigate(item.path)}
                 className="flex items-center space-x-2 space-x-reverse px-3 py-2 text-neutral-600 hover:text-primary-500 transition-colors duration-200 font-kufi"
               >
                 {item.icon}

@@ -23,7 +23,6 @@ const Footer = () => {
 
   return (
     <footer dir="rtl" className="bg-white relative pt-16 overflow-hidden">
-      {/* Blood drop background pattern */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-primary-50 opacity-60"></div>
         <div className="absolute top-20 right-10 w-24 h-24 rounded-full bg-primary-50 opacity-40"></div>

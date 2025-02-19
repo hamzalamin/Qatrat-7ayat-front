@@ -1,189 +1,145 @@
 import React, { useState } from "react";
-import {
-  Eye,
-  EyeOff,
-  Mail,
-  Lock,
-  ArrowLeft,
-  Heart,
-  Users,
-  Calendar,
-} from "lucide-react";
+import { ChevronRight, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import logo from "../../../../src/assets/images/qatrat-7ayat-logo.jpg";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    rememberMe: false,
-  });
-  const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      alert("تم تسجيل الدخول بنجاح!");
+    }, 1500);
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-neutral-50 py-20">
-      <div className="max-w-6xl mx-auto px-4 flex gap-8 items-center">
-        <div className="w-full lg:w-1/2 space-y-8">
-          <div className="text-center lg:text-right">
-            <h1 className="text-3xl font-bold font-cairo text-neutral-800 mb-2">
-              مرحباً بعودتك
-            </h1>
-            <p className="text-neutral-600 font-ibm">
-              سجل دخولك للمتابعة في رحلة إنقاذ الأرواح وصنع الفرق في مجتمعنا
-            </p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-bold font-cairo text-neutral-700"
-                >
-                  البريد الإلكتروني
-                </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    id="email"
-                    className="w-full px-4 py-3 pr-12 rounded-lg bg-neutral-50 border border-neutral-200 focus:ring-4 focus:ring-primary-100 focus:border-primary-500 transition-all duration-200 font-ibm"
-                    placeholder="example@email.com"
-                    dir="ltr"
-                  />
-                  <Mail className="w-5 h-5 text-neutral-400 absolute top-1/2 right-4 -translate-y-1/2" />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-bold font-cairo text-neutral-700"
-                >
-                  كلمة المرور
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    id="password"
-                    className="w-full px-4 py-3 pr-12 rounded-lg bg-neutral-50 border border-neutral-200 focus:ring-4 focus:ring-primary-100 focus:border-primary-500 transition-all duration-200 font-ibm"
-                    placeholder="********"
-                  />
-                  <Lock className="w-5 h-5 text-neutral-400 absolute top-1/2 right-4 -translate-y-1/2" />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute top-1/2 left-4 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors duration-200"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <label className="flex items-center space-x-2 space-x-reverse cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 text-primary-500 focus:ring-primary-200 border-neutral-300 rounded cursor-pointer"
-                  />
-                  <span className="text-sm text-neutral-600 font-ibm">
-                    تذكرني
-                  </span>
-                </label>
-                <a
-                  href="#"
-                  className="text-sm text-primary-500 hover:text-primary-600 font-ibm transition-colors duration-200"
-                >
-                  نسيت كلمة المرور؟
-                </a>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-300 flex items-center justify-center space-x-2 space-x-reverse focus:outline-none focus:ring-4 focus:ring-primary-200 font-cairo"
-              >
-                <span>تسجيل الدخول</span>
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-neutral-600 font-ibm">
-                ليس لديك حساب؟{" "}
-                <a
-                  href="#"
-                  className="text-primary-500 hover:text-primary-600 font-bold transition-colors duration-200"
-                >
-                  سجل الآن
-                </a>
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/20">
+      <div
+        className="relative min-h-screen flex items-center justify-center p-4"
+        dir="rtl"
+      >
+        <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row">
+          {/* Left Side - Form */}
+          <div className="lg:w-7/12 p-8 lg:p-12 relative">
+            <div className="max-w-md mx-auto">
+              <h2 className="text-3xl font-bold text-primary-600 text-shadow-sm font-kufi mb-4">
+                مرحباً بعودتك
+              </h2>
+              <p className="text-neutral-600 font-cairo mb-8">
+                واصل رحلتك في إنقاذ الحياة معنا
               </p>
-            </div>
-          </div>
-        </div>
+              <div className="absolute bottom-0 left-0 w-full h-1/4 bg-primary-500 opacity-10 -z-10"></div>
 
-        <div className="hidden lg:block w-1/2 mt-36">
-          <div className="relative">
-            <div className="rounded-2xl overflow-hidden shadow-xl h-full">
-              <img
-                src="https://lareleve.ma/wp-content/uploads/2023/09/75182346-52603698.jpg"
-                alt="التبرع بالدم"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent mb-24">
-                <div className="absolute bottom-0 left-0 right-0 p-8">
-                  <h2 className="text-white text-2xl font-bold font-cairo mb-6">
-                    تبرعك بالدم يصنع الفرق
-                  </h2>
-
-                  <div className="grid grid-cols-3 gap-4 mt-6">
-                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
-                      <Heart
-                        className="w-8 h-8 text-primary-300 mx-auto mb-2"
-                        fill="#FFE8E8"
-                      />
-                      <div className="text-2xl font-bold text-white font-cairo">
-                        3
-                      </div>
-                      <div className="text-sm text-white/80 font-kufi">
-                        أرواح تنقذها
-                      </div>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
-                      <Users className="w-8 h-8 text-primary-300 mx-auto mb-2" />
-                      <div className="text-2xl font-bold text-white font-cairo">
-                        16K+
-                      </div>
-                      <div className="text-sm text-white/80 font-kufi">
-                        متبرع نشط
-                      </div>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
-                      <Calendar className="w-8 h-8 text-primary-300 mx-auto mb-2" />
-                      <div className="text-2xl font-bold text-white font-cairo">
-                        500+
-                      </div>
-                      <div className="text-sm text-white/80 font-kufi">
-                        تبرع يومي
-                      </div>
-                    </div>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-neutral-700 font-cairo block">
+                    البريد الإلكتروني
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 pr-11 font-cairo placeholder:text-neutral-400"
+                      placeholder="أدخل بريدك الإلكتروني"
+                    />
+                    <Mail className="w-5 h-5 text-neutral-400 absolute right-4 top-1/2 -translate-y-1/2" />
                   </div>
                 </div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center text-primary-500">
-                <p className="text-lg font-cairo font-bold">
-                  وَتَعَاوَنُوا عَلَى الْبِرِّ وَالتَّقْوَىٰ وَلَا تَعَاوَنُوا
-                  عَلَى الْإِثْمِ وَالْعُدْوَانِ
+
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-neutral-700 font-cairo block">
+                    كلمة المرور
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 pr-11 pl-11 font-cairo placeholder:text-neutral-400"
+                      placeholder="أدخل كلمة المرور"
+                    />
+                    <Lock className="w-5 h-5 text-neutral-400 absolute right-4 top-1/2 -translate-y-1/2" />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 rounded border-neutral-300 text-primary-500 
+                        focus:ring-0 focus:ring-offset-0"
+                    />
+                    <span className="mr-2 text-sm text-neutral-600 font-cairo">
+                      تذكرني
+                    </span>
+                  </label>
+                  <a
+                    href="#"
+                    className="text-sm text-primary-500 hover:text-primary-600 font-medium font-cairo"
+                  >
+                    نسيت كلمة المرور؟
+                  </a>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-primary-600 hover:bg-primary-700 text-white py-3 px-4 rounded-xl
+                    font-medium transition-all duration-200 flex items-center justify-center gap-2 
+                    disabled:opacity-70 disabled:cursor-not-allowed font-kufi"
+                >
+                  {isLoading ? (
+                    <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <span>تسجيل الدخول</span>
+                      <ChevronRight className="w-5 h-5 rotate-180" />
+                    </>
+                  )}
+                </button>
+
+                <p className="text-center text-neutral-600 font-cairo">
+                  ليس لديك حساب؟{" "}
+                  <a
+                    href="#"
+                    className="text-primary-500 hover:text-primary-600 font-medium"
+                  >
+                    انضم إلى الأبطال
+                  </a>
                 </p>
-                <p className="text-sm text-primary-500/80 font-kufi mt-2">
-                  (سورة المائدة ٢)
-                </p>
+              </form>
+            </div>
+          </div>
+
+          <div className="hidden lg:block lg:w-5/12 relative">
+            <div className="absolute inset-0 bg-primary-500">
+              <div className="absolute inset-0 flex justify-center items-center">
+                <img
+                  src={logo} 
+                  alt="Logo"
+                  className="w-auto h-auto max-w-full max-h-full opacity-20"
+                  style={{
+                    transform: "rotate(-15deg)", 
+                    filter: "drop-shadow(4px 4px 10px rgba(0,0,0,0.3))",
+                  }}
+                />
               </div>
             </div>
           </div>
