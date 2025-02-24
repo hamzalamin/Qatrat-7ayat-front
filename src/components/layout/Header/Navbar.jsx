@@ -23,7 +23,7 @@ const Navbar = () => {
             <div className="flex items-center">
               <img 
                 src={logo} 
-                alt="قطرات حياة" 
+                alt="logo" 
                 className="w-12 h-12 rounded-full object-cover"
               />
               <span className="mr-2 text-xl font-cairo font-bold text-neutral-800">قطرة حياة</span>
