@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Eye,
   EyeOff,
@@ -6,18 +6,22 @@ import {
   Lock,
   User,
   Phone,
-  MapPin,
   AlertCircle,
   Droplet,
   UserCircle,
-  Heart,
   Check,
 } from "lucide-react";
+import CityService from "../../../services/cityService";
+import AuthService from "../../../services/authService";
+import { useNavigate } from "react-router-dom";
 
 const RegistrationForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -32,19 +36,23 @@ const RegistrationForm = () => {
     hasChronicDiseases: false,
     isFirstTimeDonor: false,
   });
+  const [cities, setCities] = useState([]);
   const [errors, setErrors] = useState({});
 
   const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-  const cities = [
-    "الرباط",
-    "الدار البيضاء",
-    "فاس",
-    "مراكش",
-    "طنجة",
-    "أكادير",
-    "وجدة",
-    "مكناس",
-  ];
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await CityService.getCities(0, 20);
+        setCities(response.data);
+      } catch (error) {
+        console.error("Failed to fetch cities:", error);
+      }
+    };
+
+    fetchCities();
+  }, []);
 
   const validateStep = (step) => {
     const newErrors = {};
@@ -72,7 +80,7 @@ const RegistrationForm = () => {
       }
       if (!formData.bloodType) newErrors.bloodType = "فصيلة الدم مطلوبة";
       if (!formData.gender) newErrors.gender = "الجنس مطلوب";
-      if (!formData.city) newErrors.city = "المدينة مطلوبة";
+      if (!formData.city) newErrors.city = "الجهة مطلوبة";
     }
 
     setErrors(newErrors);
@@ -93,17 +101,38 @@ const RegistrationForm = () => {
     e.preventDefault();
     if (!validateStep(currentStep)) return;
 
+    const bloodTypeMap = {
+      "A+": "A_PLUS",
+      "A-": "A_MOINS",
+      "B+": "B_PLUS",
+      "B-": "B_MOINS",
+      "AB+": "AB_PLUS",
+      "AB-": "AB_MOINS",
+      "O+": "O_PLUS",
+      "O-": "O_MOINS",
+    };
+
+    const payload = {
+      ...formData,
+      bloodType: bloodTypeMap[formData.bloodType],
+    };
+
     setIsLoading(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Form submitted successfully:", formData);
-    } catch (error) {
-      setErrors({
-        submit: "حدث خطأ أثناء التسجيل. يرجى المحاولة مرة أخرى.",
+    setError(""); 
+
+    AuthService.register(payload)
+      .then(() => {
+        navigate("/login");
+      })
+      .catch((err) => {
+        setError(
+          err.response?.data?.message ||
+            "حدث خطأ أثناء التسجيل. يرجى المحاولة مرة أخرى."
+        );
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const handleChange = (e) => {
@@ -122,7 +151,6 @@ const RegistrationForm = () => {
       dir="rtl"
       className="min-h-screen bg-neutral-50 relative overflow-hidden"
     >
-
       <div className="relative container mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-neutral-800 font-cairo mb-3">
@@ -133,7 +161,6 @@ const RegistrationForm = () => {
           </p>
         </div>
 
-        {/* Progress Steps */}
         <div className="max-w-3xl mx-auto mb-8">
           <div className="flex justify-between relative mb-4">
             <div className="w-full absolute top-1/2 h-1 bg-neutral-200 -translate-y-1/2"></div>
@@ -163,7 +190,6 @@ const RegistrationForm = () => {
           </div>
         </div>
 
-        {/* Form Card */}
         <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl p-8 transition-all duration-300">
           <form onSubmit={handleSubmit} className="space-y-6">
             {currentStep === 1 && (
@@ -260,16 +286,32 @@ const RegistrationForm = () => {
                   options={bloodTypes}
                   placeholder="اختر فصيلة الدم"
                 />
-                <SelectField
-                  label="المدينة"
-                  name="city"
-                  icon={<MapPin className="w-5 h-5" />}
-                  value={formData.city}
-                  onChange={handleChange}
-                  error={errors.city}
-                  options={cities}
-                  placeholder="اختر المدينة"
-                />
+                <div className="space-y-2">
+                  <label className="block text-sm font-bold font-cairo text-neutral-700">
+                    الجهة
+                  </label>
+                  <select
+                    name="city"
+                    value={formData.city}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 rounded-lg bg-neutral-50 border ${
+                      errors.city ? "border-red-500" : "border-neutral-200"
+                    } focus:ring-4 focus:ring-primary-100 focus:border-primary-500 transition-all duration-200`}
+                  >
+                    <option value="">اختر الجهة</option>
+                    {cities.map((city) => (
+                      <option key={city.id} value={city.id}>
+                        {city.cityName}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.city && (
+                    <p className="text-red-500 text-xs font-cairo mt-1">
+                      {errors.city}
+                    </p>
+                  )}
+                </div>
+
                 <div className="space-y-2">
                   <label className="block text-sm font-bold font-cairo text-neutral-700">
                     الجنس
@@ -278,17 +320,17 @@ const RegistrationForm = () => {
                     <RadioButton
                       id="male"
                       name="gender"
-                      value="male"
+                      value="MALE"
                       label="ذكر"
-                      checked={formData.gender === "male"}
+                      checked={formData.gender === "MALE"}
                       onChange={handleChange}
                     />
                     <RadioButton
                       id="female"
                       name="gender"
-                      value="female"
+                      value="FEMALE"
                       label="أنثى"
-                      checked={formData.gender === "female"}
+                      checked={formData.gender === "FEMALE"}
                       onChange={handleChange}
                     />
                   </div>
@@ -366,7 +408,6 @@ const RegistrationForm = () => {
   );
 };
 
-// Reusable Components
 const InputField = ({
   label,
   name,

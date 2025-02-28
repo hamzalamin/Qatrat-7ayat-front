@@ -1,5 +1,7 @@
 import React from 'react';
 import { Calendar, ArrowLeft, Heart } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
 
 const LatestArticles = () => {
   const articles = [
@@ -90,9 +92,9 @@ const LatestArticles = () => {
         </div>
 
         <div className="text-center mt-10">
-          <button className="bg-primary-500 hover:bg-primary-600 text-white px-8 py-3 rounded-full font-kufi transition-colors duration-200">
+          <Link to="/all-articles" className="inline-block bg-primary-500 hover:bg-primary-600 text-white px-8 py-3 rounded-full font-kufi transition-colors duration-200">
             عرض جميع المقالات
-          </button>
+          </Link>
         </div>
       </div>
     </section>

@@ -10,9 +10,9 @@ const Navbar = () => {
 
   const menuItems = [
     { path:"/", title: "الرئيسية", icon: <Home className="w-5 h-5" /> },
-    { path:"/articles", title: "المقالات", icon: <Book className="w-5 h-5" /> },
-    { path:"/donors", title: "المتبرعين", icon: <Users className="w-5 h-5" /> },
-    { path:"/requests", title: "الطلبات", icon: <ClipboardList className="w-5 h-5" /> }
+    { path:"/all-articles", title: "المقالات", icon: <Book className="w-5 h-5" /> },
+    { path:"/all-blood-donors", title: "المتبرعين", icon: <Users className="w-5 h-5" /> },
+    { path:"/all-blood-requests", title: "الطلبات", icon: <ClipboardList className="w-5 h-5" /> }
   ];
 
   return (

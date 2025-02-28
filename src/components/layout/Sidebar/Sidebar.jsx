@@ -19,7 +19,7 @@ const Sidebar = () => {
   const menuItems = [
     { link:"#" ,title: "Dashboard", icon: Home },
     { link:"dashboard/article-management" ,title: "Articles", icon: FileText },
-    { link:"dashboard/tags-management" ,title: "Tags", icon: Tag },
+    { link:"dashboard/tag-management" ,title: "Tags", icon: Tag },
     { link: "dashboard/user-management", title: "Users", icon: Users },
     { link:"#" ,title: "Donations", icon: Droplet },
     { link:"#" ,title: "Notifications", icon: Bell },

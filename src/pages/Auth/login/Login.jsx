@@ -1,22 +1,36 @@
 import React, { useState } from "react";
 import { ChevronRight, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import logo from "../../../../src/assets/images/qatrat-7ayat-logo.jpg";
+import AuthService from "../../../services/authService";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      alert("تم تسجيل الدخول بنجاح!");
-    }, 1500);
+    setError("");
+    
+    AuthService.login(email, password)
+      .then(() => {
+        navigate('/'); 
+      })
+      .catch(err => {
+        setError(
+          err.response?.data?.message || 
+          "حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى."
+        );
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/20">
       <div
@@ -24,7 +38,6 @@ const LoginPage = () => {
         dir="rtl"
       >
         <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row">
-          {/* Left Side - Form */}
           <div className="lg:w-7/12 p-8 lg:p-12 relative">
             <div className="max-w-md mx-auto">
               <h2 className="text-3xl font-bold text-primary-600 text-shadow-sm font-kufi mb-4">
@@ -118,7 +131,7 @@ const LoginPage = () => {
                 <p className="text-center text-neutral-600 font-cairo">
                   ليس لديك حساب؟{" "}
                   <a
-                    href="#"
+                    href="/register"
                     className="text-primary-500 hover:text-primary-600 font-medium"
                   >
                     انضم إلى الأبطال

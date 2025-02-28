@@ -28,11 +28,13 @@ const AdminLayout = ({ children }) => {
             </div>
 
             <div className="flex items-center space-x-4">
-              <button
+              <a
+                href="/"
+                key="homePage"
                 className="hover:bg-neutral-50 rounded-lg relative"
               >
                 <Home className="h-5 w-5 text-neutral-600" />
-              </button>
+              </a>
               <div className="relative">
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
