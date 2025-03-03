@@ -11,6 +11,10 @@ class DonorService {
       },
     });
   }
+
+  createDonor(donorData) {
+    return axios.post(API_URL + "donors", donorData);
+  }
 }
 
 export default new DonorService();
