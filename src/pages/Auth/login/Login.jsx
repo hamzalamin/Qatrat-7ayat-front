@@ -1,10 +1,16 @@
 import React, { useState } from "react";
-import { ChevronRight, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { 
+  ChevronLeft, 
+  Mail, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+} from "lucide-react";
 import logo from "../../../../src/assets/images/qatrat-7ayat-logo.jpg";
 import AuthService from "../../../services/authService";
 import { useNavigate } from "react-router-dom";
 
-const LoginPage = () => {
+const CreativeLoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -31,135 +37,137 @@ const LoginPage = () => {
         setLoading(false);
       });
   };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/20">
-      <div
-        className="relative min-h-screen flex items-center justify-center p-4"
-        dir="rtl"
-      >
-        <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row">
-          <div className="lg:w-7/12 p-8 lg:p-12 relative">
-            <div className="max-w-md mx-auto">
-              <h2 className="text-3xl font-bold text-primary-600 text-shadow-sm font-kufi mb-4">
-                مرحباً بعودتك
-              </h2>
-              <p className="text-neutral-600 font-cairo mb-8">
-                واصل رحلتك في إنقاذ الحياة معنا
-              </p>
-              <div className="absolute bottom-0 left-0 w-full h-1/4 bg-primary-500 opacity-10 -z-10"></div>
+    <div 
+      dir="rtl" 
+      className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-50 flex items-center justify-center p-4 relative overflow-hidden"
+    >
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+        {[...Array(10)].map((_, index) => (
+          <div 
+            key={index}
+            className="absolute bg-red-100/50 rounded-full opacity-30 animate-blood-drop"
+            style={{
+              width: `${Math.random() * 100 + 50}px`,
+              height: `${Math.random() * 100 + 50}px`,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`
+            }}
+          />
+        ))}
+      </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-neutral-700 font-cairo block">
-                    البريد الإلكتروني
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 pr-11 font-cairo placeholder:text-neutral-400"
-                      placeholder="أدخل بريدك الإلكتروني"
-                    />
-                    <Mail className="w-5 h-5 text-neutral-400 absolute right-4 top-1/2 -translate-y-1/2" />
-                  </div>
-                </div>
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-red-100 relative z-10 overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-pink-500"></div>
 
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-neutral-700 font-cairo block">
-                    كلمة المرور
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 pr-11 pl-11 font-cairo placeholder:text-neutral-400"
-                      placeholder="أدخل كلمة المرور"
-                    />
-                    <Lock className="w-5 h-5 text-neutral-400 absolute right-4 top-1/2 -translate-y-1/2" />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-5 h-5" />
-                      ) : (
-                        <Eye className="w-5 h-5" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 rounded border-neutral-300 text-primary-500 
-                        focus:ring-0 focus:ring-offset-0"
-                    />
-                    <span className="mr-2 text-sm text-neutral-600 font-cairo">
-                      تذكرني
-                    </span>
-                  </label>
-                  <a
-                    href="#"
-                    className="text-sm text-primary-500 hover:text-primary-600 font-medium font-cairo"
-                  >
-                    نسيت كلمة المرور؟
-                  </a>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-primary-600 hover:bg-primary-700 text-white py-3 px-4 rounded-xl
-                    font-medium transition-all duration-200 flex items-center justify-center gap-2 
-                    disabled:opacity-70 disabled:cursor-not-allowed font-kufi"
-                >
-                  {isLoading ? (
-                    <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <span>تسجيل الدخول</span>
-                      <ChevronRight className="w-5 h-5 rotate-180" />
-                    </>
-                  )}
-                </button>
-
-                <p className="text-center text-neutral-600 font-cairo">
-                  ليس لديك حساب؟{" "}
-                  <a
-                    href="/register"
-                    className="text-primary-500 hover:text-primary-600 font-medium"
-                  >
-                    انضم إلى الأبطال
-                  </a>
-                </p>
-              </form>
-            </div>
-          </div>
-
-          <div className="hidden lg:block lg:w-5/12 relative">
-            <div className="absolute inset-0 bg-primary-500">
-              <div className="absolute inset-0 flex justify-center items-center">
-                <img
-                  src={logo} 
-                  alt="Logo"
-                  className="w-auto h-auto max-w-full max-h-full opacity-20"
-                  style={{
-                    transform: "rotate(-15deg)", 
-                    filter: "drop-shadow(4px 4px 10px rgba(0,0,0,0.3))",
-                  }}
-                />
+        <div className="p-8 space-y-6">
+          <div className="text-center space-y-4">
+            <div className="flex justify-center mb-4">
+              <div className="bg-red-50 p-4 rounded-full">
+                <img src={logo} className="w-12 h-12 text-red-500" strokeWidth={1.5} />
               </div>
             </div>
+            <h2 className="text-3xl font-bold text-red-600 font-cairo">
+              مرحباً بعودتك
+            </h2>
+            <p className="text-neutral-500 font-kufi">
+              كن بطلاً. أنقذ حياة.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              <div className="relative">
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <Mail className="w-5 h-5 text-red-400" />
+                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="البريد الإلكتروني"
+                  className="w-full px-4 py-3 pl-10 pr-10 rounded-xl bg-red-50/50 
+                    border border-red-100 focus:outline-none 
+                    focus:ring-2 focus:ring-red-300 
+                    text-right font-cairo"
+                />
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <Lock className="w-5 h-5 text-red-400" />
+                </div>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="كلمة المرور"
+                  className="w-full px-4 py-3 pl-10 pr-10 rounded-xl bg-red-50/50 
+                    border border-red-100 focus:outline-none 
+                    focus:ring-2 focus:ring-red-300 
+                    text-right font-cairo"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-red-400 hover:text-red-600"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <label className="flex items-center space-x-2 rtl:space-x-reverse">
+                <input
+                  type="checkbox"
+                  className="text-red-500 rounded focus:ring-red-300"
+                />
+                <span className="text-sm text-neutral-600 font-cairo">تذكرني</span>
+              </label>
+              <a href="#" className="text-sm text-red-500 hover:text-red-600 font-cairo">
+                نسيت كلمة المرور؟
+              </a>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl 
+                transition-colors duration-300 flex items-center justify-center 
+                space-x-2 rtl:space-x-reverse font-cairo"
+            >
+              {isLoading ? (
+                <div className="animate-pulse">جاري تسجيل الدخول...</div>
+              ) : (
+                <>
+                  <span>تسجيل الدخول</span>
+                  <ChevronLeft className="w-5 h-5" />
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="text-center mt-6">
+            <p className="text-neutral-600 font-cairo">
+              ليس لديك حساب؟{" "}
+              <a 
+                href="/register" 
+                className="text-red-500 hover:text-red-600 font-medium"
+              >
+                انضم إلينا الآن
+              </a>
+            </p>
           </div>
         </div>
+
+        {/* Subtle Background Pattern */}
+        <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-l from-red-500 to-pink-500"></div>
       </div>
     </div>
   );
 };
 
-export default LoginPage;
+export default CreativeLoginPage;

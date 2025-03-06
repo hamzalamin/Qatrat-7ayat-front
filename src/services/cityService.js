@@ -1,10 +1,10 @@
-import axios from 'axios';
+import { axiosClient } from '../config/axios';
 
-const API_URL = 'http://localhost:8081/api/v1/cities'; 
+const API_URL = 'v1/cities'; 
 
 class CityService {
   getCities(pageNumber, size) {
-    return axios.get(`${API_URL}?pageNumber=${pageNumber}&size=${size}`);
+    return axiosClient.get(`${API_URL}?pageNumber=${pageNumber}&size=${size}`);
   }
 }
 

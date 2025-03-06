@@ -118,7 +118,7 @@ const RegistrationForm = () => {
     };
 
     setIsLoading(true);
-    setError(""); 
+    setError("");
 
     AuthService.register(payload)
       .then(() => {
@@ -149,14 +149,30 @@ const RegistrationForm = () => {
   return (
     <div
       dir="rtl"
-      className="min-h-screen bg-neutral-50 relative overflow-hidden"
+      className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-50 relative overflow-hidden"
     >
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+        {[...Array(10)].map((_, index) => (
+          <div
+            key={index}
+            className="absolute bg-red-100/50 rounded-full opacity-30 animate-blood-drop"
+            style={{
+              width: `${Math.random() * 100 + 50}px`,
+              height: `${Math.random() * 100 + 50}px`,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`,
+            }}
+          />
+        ))}
+      </div>
+
       <div className="relative container mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-neutral-800 font-cairo mb-3">
+          <h1 className="text-4xl font-bold text-red-600 font-cairo mb-3">
             التسجيل في منصة قطرات حياة
           </h1>
-          <p className="text-neutral-600 text-lg max-w-md mx-auto font-kufi">
+          <p className="text-neutral-500 text-lg max-w-md mx-auto font-kufi">
             كن بطلاً في قصة إنقاذ حياة - تبرعك بالدم يصنع الفرق
           </p>
         </div>
@@ -165,19 +181,19 @@ const RegistrationForm = () => {
           <div className="flex justify-between relative mb-4">
             <div className="w-full absolute top-1/2 h-1 bg-neutral-200 -translate-y-1/2"></div>
             <div
-              className="w-full absolute top-1/2 h-1 bg-primary-500 -translate-y-1/2 transition-all duration-300"
+              className="w-full absolute top-1/2 h-1 bg-red-500 -translate-y-1/2 transition-all duration-300"
               style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
             ></div>
             {[1, 2, 3].map((step) => (
               <div
                 key={step}
                 className={`relative z-10 flex items-center justify-center w-10 h-10 rounded-full 
-                ${
-                  step <= currentStep
-                    ? "bg-primary-500 text-white"
-                    : "bg-white text-neutral-400 border-2 border-neutral-200"
-                }
-                transition-all duration-300`}
+              ${
+                step <= currentStep
+                  ? "bg-red-500 text-white"
+                  : "bg-white text-neutral-400 border-2 border-neutral-200"
+              }
+              transition-all duration-300`}
               >
                 {step < currentStep ? <Check className="w-5 h-5" /> : step}
               </div>
@@ -190,8 +206,9 @@ const RegistrationForm = () => {
           </div>
         </div>
 
-        <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl p-8 transition-all duration-300">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-2xl border border-red-100 relative z-10 overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-pink-500"></div>
+          <form onSubmit={handleSubmit} className="p-8 space-y-6">
             {currentStep === 1 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <InputField
@@ -377,8 +394,8 @@ const RegistrationForm = () => {
               <button
                 type="button"
                 onClick={handleNext}
-                className="px-6 py-3 bg-primary-500 text-white rounded-lg font-bold font-cairo 
-                    hover:bg-primary-600 focus:ring-4 focus:ring-primary-100 transition-all duration-200 
+                className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold font-cairo 
+                    focus:ring-2 focus:ring-red-300 transition-all duration-200 
                     mr-auto"
               >
                 التالي
@@ -387,21 +404,20 @@ const RegistrationForm = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-6 py-3 bg-primary-500 text-white rounded-lg font-bold font-cairo 
-                    hover:bg-primary-600 focus:ring-4 focus:ring-primary-100 transition-all duration-200 
-                    disabled:opacity-50 disabled:cursor-not-allowed mr-auto"
+                className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl 
+                    transition-colors duration-300 flex items-center justify-center 
+                    space-x-2 rtl:space-x-reverse font-cairo
+                    disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-5 h-5 border-t-2 border-white rounded-full animate-spin"></div>
-                    <span>جاري التسجيل...</span>
-                  </div>
+                  <div className="animate-pulse">جاري التسجيل...</div>
                 ) : (
                   "تأكيد التسجيل"
                 )}
               </button>
             )}
           </form>
+          <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-l from-red-500 to-pink-500"></div>
         </div>
       </div>
     </div>
@@ -427,14 +443,14 @@ const InputField = ({
         name={name}
         value={value}
         onChange={onChange}
-        className={`w-full px-4 py-3 pr-12 rounded-lg bg-neutral-50 border 
-          ${error ? "border-red-500" : "border-neutral-200"}
-          focus:ring-4 focus:ring-primary-100 focus:border-primary-500 
-          transition-all duration-200 font-ibm`}
+        className={`w-full px-4 py-3 pl-10 pr-10 rounded-xl bg-red-50/50 
+          border border-red-100 focus:outline-none 
+          focus:ring-2 focus:ring-red-300 
+          text-right font-cairo`}
       />
-      <span className="text-neutral-400 absolute top-1/2 right-4 -translate-y-1/2">
-        {icon}
-      </span>
+      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+        {React.cloneElement(icon, { className: "w-5 h-5 text-red-400" })}
+      </div>
     </div>
     {error && <ErrorMessage message={error} />}
   </div>
@@ -459,10 +475,10 @@ const SelectField = ({
         name={name}
         value={value}
         onChange={onChange}
-        className={`w-full px-4 py-3 pr-12 rounded-lg bg-neutral-50 border 
-          ${error ? "border-red-500" : "border-neutral-200"}
-          focus:ring-4 focus:ring-primary-100 focus:border-primary-500 
-          transition-all duration-200 font-ibm`}
+        className={`w-full px-4 py-3 pl-10 pr-10 rounded-xl bg-red-50/50 
+          border border-red-100 focus:outline-none 
+          focus:ring-2 focus:ring-red-300 
+          text-right font-cairo`}
       >
         <option value="">{placeholder}</option>
         {options.map((option) => (
@@ -471,9 +487,9 @@ const SelectField = ({
           </option>
         ))}
       </select>
-      <span className="text-neutral-400 absolute top-1/2 right-4 -translate-y-1/2">
-        {icon}
-      </span>
+      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+        {React.cloneElement(icon, { className: "w-5 h-5 text-red-400" })}
+      </div>
     </div>
     {error && <ErrorMessage message={error} />}
   </div>
@@ -491,7 +507,7 @@ const RadioButton = ({ id, name, value, label, checked, onChange }) => (
       value={value}
       checked={checked}
       onChange={onChange}
-      className="w-4 h-4 text-primary-500 border-neutral-300 focus:ring-primary-500"
+      className="w-4 h-4 text-red-500 border-neutral-300 focus:ring-red-300"
     />
     <span className="text-sm text-neutral-700 group-hover:text-neutral-900 font-ibm">
       {label}
@@ -501,7 +517,7 @@ const RadioButton = ({ id, name, value, label, checked, onChange }) => (
 
 const ErrorMessage = ({ message }) => (
   <p className="flex items-center text-red-500 text-sm mt-1 font-ibm">
-    <AlertCircle className="w-4 h-4 ml-1" />
+    <AlertCircle className="w-4 h-4 ml-1 text-red-400" />
     {message}
   </p>
 );

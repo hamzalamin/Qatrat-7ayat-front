@@ -1,10 +1,9 @@
 import axios from 'axios';
-
-const API_URL = 'http://localhost:8081/api/v1/hospitals'; 
+import { axiosClient } from '../config/axios';
 
 class HospitalService {
   getHospitals(pageNumber, size) {
-    return axios.get(`${API_URL}?pageNumber=${pageNumber}&size=${size}`);
+    return axiosClient.get(`v1/hospitals?pageNumber=${pageNumber}&size=${size}`);
   }
 }
 

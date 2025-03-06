@@ -1,19 +1,18 @@
-import axios from "axios";
+import { axiosClient } from "../config/axios";
 
-const API_URL = "http://localhost:8081/api/v1/";
 
 class DonorService {
-  getAllDonors(pageNumber, size) {
-    return axios.get(API_URL + "donors", {
-      params: {
-        pageNumber: pageNumber,
-        size: size,
-      },
-    });
-  }
+    getAllDonors(pageNumber, size) {
+      return axiosClient.get("v1/donors", {
+        params: {
+          pageNumber: pageNumber,
+          size: size,
+        },
+      });
+    }
 
   createDonor(donorData) {
-    return axios.post(API_URL + "donors", donorData);
+    return axiosClient.post("v1/donors", donorData);
   }
 }
 

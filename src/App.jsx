@@ -17,6 +17,7 @@ import AllBloodRequests from "./pages/BloodRequest/AllBloodRequests";
 import AllArticles from "./pages/Artcle/AllArticles";
 import BloodDonorsSection from "./pages/BloodDonor/BloodDonors";
 import AllBloodDonors from "./pages/BloodDonor/AllBloodDonors";
+import UserProfile from "./pages/Auth/profile";
 
 function Layout({ children }) {
   const location = useLocation();
@@ -54,6 +55,7 @@ function App() {
           <Route path="/all-articles" element={<AllArticles />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegistrationForm />} />
+          <Route path="/profile/:id" element={<UserProfile />} />
           <Route path="/admin/dashboard" element={<AdminLayout />}>
             <Route index element={<AdminStatistics />} />
             <Route path="article-management" element={<ArticleManagement />} />

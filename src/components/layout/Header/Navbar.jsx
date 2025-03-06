@@ -1,33 +1,79 @@
-import React, { useState } from 'react';
-import { Menu, X, Home, Book, Users, ClipboardList, Bell, Search } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import logo from '../../../assets/images/qatrat-7ayat-logo.jpg';
+import React, { useState, useEffect } from "react";
+import {
+  Menu,
+  X,
+  Home,
+  Book,
+  Users,
+  ClipboardList,
+  Bell,
+  Search,
+  User,
+  LogIn,
+  UserPlus,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import logo from "../../../assets/images/qatrat-7ayat-logo.jpg";
+import AuthService from "../../../services/authService";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const navigate = useNavigate(); 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
   const menuItems = [
-    { path:"/", title: "الرئيسية", icon: <Home className="w-5 h-5" /> },
-    { path:"/all-articles", title: "المقالات", icon: <Book className="w-5 h-5" /> },
-    { path:"/all-blood-donors", title: "المتبرعين", icon: <Users className="w-5 h-5" /> },
-    { path:"/all-blood-requests", title: "الطلبات", icon: <ClipboardList className="w-5 h-5" /> }
+    { path: "/", title: "الرئيسية", icon: <Home className="w-5 h-5" /> },
+    {
+      path: "/all-articles",
+      title: "المقالات",
+      icon: <Book className="w-5 h-5" />,
+    },
+    {
+      path: "/all-blood-donors",
+      title: "المتبرعين",
+      icon: <Users className="w-5 h-5" />,
+    },
+    {
+      path: "/all-blood-requests",
+      title: "الطلبات",
+      icon: <ClipboardList className="w-5 h-5" />,
+    },
   ];
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const loggedIn = AuthService.isAuthenticated();
+      setIsLoggedIn(loggedIn);
+    };
+
+    checkAuth();
+    window.addEventListener("authChange", checkAuth);
+
+    return () => {
+      window.removeEventListener("authChange", checkAuth);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    AuthService.logout();
+    setIsLoggedIn(false);
+    navigate("/");
+  };
 
   return (
     <nav dir="rtl" className="bg-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-4 space-x-reverse">
-            <div className="flex items-center">
-              <img 
-                src={logo} 
-                alt="logo" 
-                className="w-12 h-12 rounded-full object-cover"
-              />
-              <span className="mr-2 text-xl font-cairo font-bold text-neutral-800">قطرة حياة</span>
-            </div>
+          <div className="flex items-center">
+            <img
+              src={logo}
+              alt="logo"
+              className="w-12 h-12 rounded-full object-cover"
+            />
+            <span className="mr-2 text-xl font-cairo font-bold text-neutral-800">
+              قطرة حياة
+            </span>
           </div>
 
           <div className="hidden md:flex items-center space-x-8 space-x-reverse">
@@ -44,60 +90,81 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-4 space-x-reverse">
-            
-            <div className={`hidden md:flex items-center ${isSearchOpen ? 'w-64' : 'w-48'} transition-all duration-300`}>
-              <input
-                type="text"
-                placeholder="ابحث..."
-                className="w-full px-4 py-2 rounded-full bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 font-kufi text-sm"
-                onFocus={() => setIsSearchOpen(true)}
-                onBlur={() => setIsSearchOpen(false)}
-              />
-              <Search className="w-5 h-5 text-neutral-400 -mr-8" />
-            </div>
+            {isLoggedIn ? (
+              <>
+                {/* Profile */}
+                <button
+                  onClick={() => {
+                    const user = AuthService.getCurrentUser(); 
+                    if (user && user.id) {
+                      navigate(`/profile/${user.id}`);
+                    }
+                  }}
+                  className="relative p-2 hover:bg-neutral-50 rounded-full transition-colors duration-200"
+                >
+                  <User className="w-6 h-6 text-neutral-600" />
+                </button>
 
-            
-            <button className="relative p-2 hover:bg-neutral-50 rounded-full transition-colors duration-200">
-              <Bell className="w-6 h-6 text-neutral-600" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-primary-500 rounded-full"></span>
-            </button>
+                {/* Logout */}
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 text-sm font-kufi text-red-600 hover:bg-red-50 rounded-full transition-colors duration-200"
+                >
+                  تسجيل الخروج
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Login */}
+                <button
+                  onClick={() => navigate("/login")}
+                  className="flex items-center space-x-2 space-x-reverse px-4 py-2 text-sm font-kufi text-primary-600 hover:bg-primary-50 rounded-full transition-colors duration-200"
+                >
+                  <LogIn className="w-5 h-5" />
+                  <span>تسجيل الدخول</span>
+                </button>
 
-             
+                {/* Register */}
+                <button
+                  onClick={() => navigate("/register")}
+                  className="flex items-center space-x-2 space-x-reverse px-4 py-2 text-sm font-kufi text-green-600 hover:bg-green-50 rounded-full transition-colors duration-200"
+                >
+                  <UserPlus className="w-5 h-5" />
+                  <span>إنشاء حساب</span>
+                </button>
+              </>
+            )}
+
+            {/* Mobile Menu Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="md:hidden p-2 hover:bg-neutral-50 rounded-full transition-colors duration-200"
             >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
       </div>
 
-      
-      <div className={`md:hidden ${isOpen ? 'block' : 'hidden'} bg-white border-t`}>
-        <div className="px-2 pt-2 pb-3 space-y-1">
+      {/* Mobile Menu */}
+      {isOpen && (
+        <div className="md:hidden bg-white border-t">
           {menuItems.map((item) => (
             <button
               key={item.title}
-              className="flex items-center space-x-3 space-x-reverse w-full px-3 py-2 text-neutral-600 hover:bg-neutral-50 rounded-lg transition-colors duration-200 font-kufi"
+              onClick={() => navigate(item.path)}
+              className="block px-3 py-2 text-neutral-600 hover:bg-neutral-50 rounded-lg transition-colors duration-200"
             >
               {item.icon}
-              <span>{item.title}</span>
+              {item.title}
             </button>
           ))}
-          
-          <div className="px-3 py-2">
-            <div className="flex items-center">
-              <input
-                type="text"
-                placeholder="ابحث..."
-                className="w-full px-4 py-2 rounded-full bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 font-kufi text-sm"
-              />
-              <Search className="w-5 h-5 text-neutral-400 -mr-8" />
-            </div>
-          </div>
         </div>
-      </div>
+      )}
     </nav>
   );
 };

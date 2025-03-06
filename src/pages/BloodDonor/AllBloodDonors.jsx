@@ -16,6 +16,7 @@ import {
 import DonorService from "../../services/donorService";
 import CityService from "../../services/cityService";
 import HospitalService from "../../services/hospitalService";
+import AuthService from "../../services/authService";
 
 const mapBloodType = (bloodType) => {
   const bloodTypeMap = {
@@ -59,9 +60,9 @@ const AllBloodDonors = () => {
   const [cities, setCities] = useState([]);
   const [hospitals, setHospitals] = useState([]);
   const [pageNumber, setPageNumber] = useState(0);
-  const [size, setSize] = useState(10);
+  const [size, setSize] = useState(9);
   const [totalPages, setTotalPages] = useState(0);
-  
+
   const [showPopup, setShowPopup] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -72,7 +73,7 @@ const AllBloodDonors = () => {
     cityId: "",
     hospitalId: "",
     message: "",
-    availabilityPeriod: "متاح فوراً",
+    availabilityPeriod: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
@@ -82,8 +83,14 @@ const AllBloodDonors = () => {
     const fetchDonors = async () => {
       setLoading(true);
       try {
-        const response = await DonorService.getAllDonors(totalPages, size);
-        const donors = response.data.map((donor) => ({
+        const response = await DonorService.getAllDonors(pageNumber, size);
+        console.log("API Response:", response);
+
+        if (!response.data || !response.data.content) {
+          throw new Error("Invalid API response structure");
+        }
+
+        const donors = response.data.content.map((donor) => ({
           id: donor.donor.id,
           location: donor.profile.city.cityName,
           cityId: donor.profile.city.id,
@@ -99,17 +106,17 @@ const AllBloodDonors = () => {
           hospital: donor.donor.hospital.name,
           hospitalId: donor.donor.hospital.id,
           message: donor.donor.message,
-          status: "available", 
+          status: "available",
         }));
 
         setRequests(donors);
         setFilteredRequests(donors);
 
-        if (response.data.totalPages) {
-          setTotalPages(response.data.totalPages);
-        }
+        setTotalPages(response.data.totalPages);
       } catch (error) {
         console.error("Error fetching donors:", error);
+        setRequests([]); 
+        setFilteredRequests([]);
       } finally {
         setLoading(false);
       }
@@ -152,11 +159,20 @@ const AllBloodDonors = () => {
       result = result.filter(
         (request) =>
           request.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          request.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          request.description
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
           request.hospital.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (request.firstName && request.firstName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (request.lastName && request.lastName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (request.pseudoName && request.pseudoName.toLowerCase().includes(searchTerm.toLowerCase()))
+          (request.firstName &&
+            request.firstName
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())) ||
+          (request.lastName &&
+            request.lastName
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())) ||
+          (request.pseudoName &&
+            request.pseudoName.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
@@ -167,8 +183,10 @@ const AllBloodDonors = () => {
     }
 
     if (filters.location) {
-      result = result.filter((request) =>
-        request.cityId === filters.location || request.location.includes(filters.location)
+      result = result.filter(
+        (request) =>
+          request.cityId === filters.location ||
+          request.location.includes(filters.location)
       );
     }
 
@@ -217,7 +235,31 @@ const AllBloodDonors = () => {
     setSearchTerm("");
   };
 
-  // Form handling for the popup
+  useEffect(() => {
+    if (showPopup && AuthService.isAuthenticated()) {
+      const fetchUserProfile = async () => {
+        try {
+          const profile = await AuthService.getUserProfile();
+          if (profile) {
+            setFormData((prevData) => ({
+              ...prevData,
+              firstName: profile.firstName || "",
+              lastName: profile.lastName || "",
+              pseudoName: profile.pseudoName || "",
+              phone: profile.phone || "",
+              bloodType: mapBloodType(profile.bloodType) || "",
+              cityId: profile.city?.id || "",
+            }));
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+      };
+
+      fetchUserProfile();
+    }
+  }, [showPopup]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -232,10 +274,16 @@ const AllBloodDonors = () => {
     setFormError("");
 
     try {
-      if (!formData.bloodType || !formData.cityId || !formData.hospitalId || !formData.phone) {
+      if (
+        !formData.bloodType ||
+        !formData.cityId ||
+        !formData.hospitalId ||
+        !formData.phone
+      ) {
         throw new Error("يرجى ملء جميع الحقول المطلوبة");
       }
 
+      const user = AuthService.getCurrentUser();
       const donorData = {
         profile: {
           firstName: formData.firstName,
@@ -243,17 +291,18 @@ const AllBloodDonors = () => {
           psudoName: formData.pseudoName,
           phone: formData.phone,
           bloodType: reverseMapBloodType(formData.bloodType),
-          cityId: formData.cityId
+          cityId: formData.cityId,
+          userId: user?.id,
         },
         donor: {
           availabilityPeriod: formData.availabilityPeriod,
           message: formData.message,
-          hospitalId: formData.hospitalId
-        }
+          hospitalId: formData.hospitalId,
+        },
       };
 
       await DonorService.createDonor(donorData);
-      
+
       setFormData({
         firstName: "",
         lastName: "",
@@ -263,15 +312,14 @@ const AllBloodDonors = () => {
         cityId: "",
         hospitalId: "",
         message: "",
-        availabilityPeriod: "متاح فوراً",
+        availabilityPeriod: "",
       });
       setFormSuccess(true);
-      
+
       setTimeout(() => {
         setShowPopup(false);
         setFormSuccess(false);
       }, 2000);
-      
     } catch (error) {
       console.error("Error creating donor:", error);
       setFormError(error.message || "حدث خطأ أثناء إنشاء عرض التبرع");
@@ -281,20 +329,19 @@ const AllBloodDonors = () => {
   };
 
   const bloodTypes = ["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"];
-  const availabilityOptions = ["متاح فوراً", "متاح خلال 24 ساعة", "متاح خلال أسبوع"];
 
   return (
     <div className="bg-neutral-50 min-h-screen py-12 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-10">
-          <button 
+          <button
             onClick={() => setShowPopup(true)}
             className="bg-primary-500 hover:bg-primary-600 text-white py-2 px-4 rounded-lg font-kufi flex items-center transition-colors duration-200"
           >
             <Plus className="w-5 h-5 mr-2" />
             إضافة عرض تبرع جديد
           </button>
-          
+
           <div className="text-right">
             <h1 className="text-4xl font-cairo font-bold text-neutral-800 mb-3">
               جميع عروض التبرع بالدم
@@ -430,7 +477,8 @@ const AllBloodDonors = () => {
                     <div className="flex items-start space-x-2 space-x-reverse">
                       <User className="w-5 h-5 text-neutral-500 mr-2" />
                       <p className="text-neutral-700 font-kufi">
-                        {request.pseudoName || `${request.firstName} ${request.lastName}`}
+                        {request.pseudoName ||
+                          `${request.firstName} ${request.lastName}`}
                       </p>
                     </div>
                     <div className="flex items-start space-x-2 space-x-reverse">
@@ -479,17 +527,19 @@ const AllBloodDonors = () => {
         {filteredRequests.length > 0 && (
           <div className="mt-12 flex justify-center">
             <nav className="flex items-center space-x-2">
+              {/* Previous Button */}
               <button
-                onClick={() => setPageNumber(pageNumber - 1)}
+                onClick={() => setPageNumber((prev) => Math.max(prev - 1, 0))}
                 disabled={pageNumber === 0}
                 className="px-3 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-100"
               >
                 السابق
               </button>
 
+              {/* Page Numbers */}
               {Array.from({ length: totalPages }, (_, i) => {
-                const pageToShow = i + 1;  
-                const pagesToShow = 5;    
+                const pageToShow = i + 1;
+                const pagesToShow = 5; // Number of pages to display
                 const startPage = Math.max(
                   1,
                   pageNumber + 1 - Math.floor(pagesToShow / 2)
@@ -503,7 +553,7 @@ const AllBloodDonors = () => {
                   return (
                     <button
                       key={i}
-                      onClick={() => setPageNumber(i)} 
+                      onClick={() => setPageNumber(i)}
                       className={`px-4 py-2 rounded-md ${
                         i === pageNumber
                           ? "bg-primary-500 text-white"
@@ -518,7 +568,9 @@ const AllBloodDonors = () => {
               })}
 
               <button
-                onClick={() => setPageNumber(pageNumber + 1)}
+                onClick={() =>
+                  setPageNumber((prev) => Math.min(prev + 1, totalPages - 1))
+                }
                 disabled={pageNumber === totalPages - 1}
                 className="px-3 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-100"
               >
@@ -545,187 +597,182 @@ const AllBloodDonors = () => {
                 </h2>
               </div>
 
-              {formSuccess ? (
-                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 text-right">
-                  <p className="font-kufi">تم إنشاء عرض التبرع بنجاح! جزاك الله خيراً.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {formError && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-right">
-                      <p className="font-kufi">{formError}</p>
-                    </div>
-                  )}
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-neutral-700 font-kufi text-right mb-2">
-                        الاسم الأول
-                      </label>
-                      <input
-                        type="text"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        className="block w-full border border-neutral-300 rounded-lg py-3 px-4 text-right font-kufi focus:ring-primary-500 focus:border-primary-500"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-neutral-700 font-kufi text-right mb-2">
-                        الاسم الأخير
-                      </label>
-                      <input
-                        type="text"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        className="block w-full border border-neutral-300 rounded-lg py-3 px-4 text-right font-kufi focus:ring-primary-500 focus:border-primary-500"
-                      />
-                    </div>
-                  </div>
-                  
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* First Name */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-neutral-700 font-kufi text-right mb-2">
-                      الاسم المستعار (اختياري)
+                      الاسم الأول
                     </label>
                     <input
                       type="text"
-                      name="pseudoName"
-                      value={formData.pseudoName}
+                      name="firstName"
+                      value={formData.firstName}
                       onChange={handleInputChange}
                       className="block w-full border border-neutral-300 rounded-lg py-3 px-4 text-right font-kufi focus:ring-primary-500 focus:border-primary-500"
-                      placeholder="سيظهر بدلاً من اسمك الحقيقي"
+                      disabled={AuthService.isAuthenticated()}
                     />
                   </div>
-                  
+
+                  {/* Last Name */}
                   <div>
                     <label className="block text-neutral-700 font-kufi text-right mb-2">
-                      رقم الهاتف <span className="text-red-500">*</span>
+                      الاسم الأخير
                     </label>
                     <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      className="block w-full border border-neutral-300 rounded-lg py-3 px-4 text-right font-kufi focus:ring-primary-500 focus:border-primary-500"
+                      disabled={AuthService.isAuthenticated()}
+                    />
+                  </div>
+                </div>
+
+                {/* Pseudo Name */}
+                <div>
+                  <label className="block text-neutral-700 font-kufi text-right mb-2">
+                    الاسم المستعار (اختياري)
+                  </label>
+                  <input
+                    type="text"
+                    name="pseudoName"
+                    value={formData.pseudoName}
+                    onChange={handleInputChange}
+                    className="block w-full border border-neutral-300 rounded-lg py-3 px-4 text-right font-kufi focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="سيظهر بدلاً من اسمك الحقيقي"
+                  />
+                </div>
+
+                {/* Phone Number */}
+                <div>
+                  <label className="block text-neutral-700 font-kufi text-right mb-2">
+                    رقم الهاتف <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="block w-full border border-neutral-300 rounded-lg py-3 px-4 text-right font-kufi focus:ring-primary-500 focus:border-primary-500"
+                    required
+                    disabled={AuthService.isAuthenticated()} // Disable if authenticated
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-neutral-700 font-kufi text-right mb-2">
+                      فصيلة الدم <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="bloodType"
+                      value={formData.bloodType}
                       onChange={handleInputChange}
                       className="block w-full border border-neutral-300 rounded-lg py-3 px-4 text-right font-kufi focus:ring-primary-500 focus:border-primary-500"
                       required
-                    />
+                      disabled={AuthService.isAuthenticated()}
+                    >
+                      <option value="">اختر فصيلة الدم</option>
+                      {bloodTypes.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-neutral-700 font-kufi text-right mb-2">
-                        فصيلة الدم <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        name="bloodType"
-                        value={formData.bloodType}
-                        onChange={handleInputChange}
-                        className="block w-full border border-neutral-300 rounded-lg py-3 px-4 text-right font-kufi focus:ring-primary-500 focus:border-primary-500"
-                        required
-                      >
-                        <option value="">اختر فصيلة الدم</option>
-                        {bloodTypes.map((type) => (
-                          <option key={type} value={type}>
-                            {type}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-neutral-700 font-kufi text-right mb-2">
-                        المدينة <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        name="cityId"
-                        value={formData.cityId}
-                        onChange={handleInputChange}
-                        className="block w-full border border-neutral-300 rounded-lg py-3 px-4 text-right font-kufi focus:ring-primary-500 focus:border-primary-500"
-                        required
-                      >
-                        <option value="">اختر المدينة</option>
-                        {cities.map((city) => (
-                          <option key={city.id} value={city.id}>
-                            {city.cityName}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-neutral-700 font-kufi text-right mb-2">
-                        المستشفى <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        name="hospitalId"
-                        value={formData.hospitalId}
-                        onChange={handleInputChange}
-                        className="block w-full border border-neutral-300 rounded-lg py-3 px-4 text-right font-kufi focus:ring-primary-500 focus:border-primary-500"
-                        required
-                      >
-                        <option value="">اختر المستشفى</option>
-                        {hospitals.map((hospital) => (
-                          <option key={hospital.id} value={hospital.id}>
-                            {hospital.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-neutral-700 font-kufi text-right mb-2">
-                        فترة التوفر
-                      </label>
-                      <select
-                        name="availabilityPeriod"
-                        value={formData.availabilityPeriod}
-                        onChange={handleInputChange}
-                        className="block w-full border border-neutral-300 rounded-lg py-3 px-4 text-right font-kufi focus:ring-primary-500 focus:border-primary-500"
-                      >
-                        {availabilityOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  
+
                   <div>
                     <label className="block text-neutral-700 font-kufi text-right mb-2">
-                      ملاحظات إضافية
+                      المدينة <span className="text-red-500">*</span>
                     </label>
-                    <textarea
-                      name="message"
-                      value={formData.message}
+                    <select
+                      name="cityId"
+                      value={formData.cityId}
                       onChange={handleInputChange}
-                      className="block w-full border border-neutral-300 rounded-lg py-3 px-4 text-right font-kufi focus:ring-primary-500 focus:border-primary-500 h-32"
-                      placeholder="...معلومات إضافية أو توضيحات حول تبرعك"
-                    ></textarea>
-                  </div>
-                  
-                  <div className="flex justify-center mt-6">
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="bg-primary-500 hover:bg-primary-600 text-white py-3 px-8 rounded-lg font-kufi font-bold text-lg transition-colors duration-200 flex items-center"
+                      className="block w-full border border-neutral-300 rounded-lg py-3 px-4 text-right font-kufi focus:ring-primary-500 focus:border-primary-500"
+                      required
+                      disabled={AuthService.isAuthenticated()}
                     >
-                      {submitting ? (
-                        <>
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                          جاري الإرسال...
-                        </>
-                      ) : (
-                        "تسجيل عرض التبرع"
-                      )}
-                    </button>
+                      <option value="">اختر المدينة</option>
+                      {cities.map((city) => (
+                        <option key={city.id} value={city.id}>
+                          {city.cityName}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                </form>
-              )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-neutral-700 font-kufi text-right mb-2">
+                      المستشفى <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="hospitalId"
+                      value={formData.hospitalId}
+                      onChange={handleInputChange}
+                      className="block w-full border border-neutral-300 rounded-lg py-3 px-4 text-right font-kufi focus:ring-primary-500 focus:border-primary-500"
+                      required
+                    >
+                      <option value="">اختر المستشفى</option>
+                      {hospitals.map((hospital) => (
+                        <option key={hospital.id} value={hospital.id}>
+                          {hospital.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-neutral-700 font-kufi text-right mb-2">
+                      فترة التوفر
+                    </label>
+                    <input
+                      type="text"
+                      name="availabilityPeriod"
+                      value={formData.availabilityPeriod}
+                      onChange={handleInputChange}
+                      className="block w-full border border-neutral-300 rounded-lg py-3 px-4 text-right font-kufi focus:ring-primary-500 focus:border-primary-500"
+                      placeholder="مثال: من 9 صباحًا إلى 6 مساءً"
+                    />
+                  </div>
+                </div>
+
+                {/* Additional Notes */}
+                <div>
+                  <label className="block text-neutral-700 font-kufi text-right mb-2">
+                    ملاحظات إضافية
+                  </label>
+                  <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    className="block w-full border border-neutral-300 rounded-lg py-3 px-4 text-right font-kufi focus:ring-primary-500 focus:border-primary-500 h-32"
+                    placeholder="...معلومات إضافية أو توضيحات حول تبرعك"
+                  ></textarea>
+                </div>
+
+                {/* Submit Button */}
+                <div className="flex justify-center mt-6">
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="bg-primary-500 hover:bg-primary-600 text-white py-3 px-8 rounded-lg font-kufi font-bold text-lg transition-colors duration-200 flex items-center"
+                  >
+                    {submitting ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        جاري الإرسال...
+                      </>
+                    ) : (
+                      "تسجيل عرض التبرع"
+                    )}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

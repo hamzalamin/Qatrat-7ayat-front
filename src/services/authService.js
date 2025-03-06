@@ -1,17 +1,19 @@
-import axios from 'axios';
+import { axiosClient } from "../config/axios";
 
-const API_URL = 'http://localhost:8081/api/auth/';
+const API_URL = 'auth/';
 
 class AuthService {
   login(email, password) {
-    return axios
+    return axiosClient
       .post(API_URL + 'signin', {
         email,
         password
       })
       .then(response => {
         if (response.data.token) {
-          localStorage.setItem('user', JSON.stringify(response.data));
+          localStorage.setItem('token', response.data.token); 
+          localStorage.setItem('user', JSON.stringify(response.data)); 
+          window.dispatchEvent(new Event("authChange"));
         }
         return response.data;
       });
@@ -19,10 +21,11 @@ class AuthService {
 
   logout() {
     localStorage.removeItem('user');
+    window.dispatchEvent(new Event("authChange")); 
   }
 
   register(userData) {
-    return axios.post(API_URL + 'signup', {
+    return axiosClient.post(API_URL + 'signup', {
       firstName: userData.firstName,
       lastName: userData.lastName,
       psudoName: userData.pseudoName, 
@@ -44,6 +47,19 @@ class AuthService {
   isAuthenticated() {
     const user = this.getCurrentUser();
     return !!user && !!user.token;
+  }
+
+  async getUserProfile() {
+    const user = this.getCurrentUser();
+    if (user && user.token) {
+      const response = await axiosClient.get('v1/profile', {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+      return response.data;
+    }
+    return null;
   }
 }
 
