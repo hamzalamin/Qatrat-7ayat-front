@@ -18,6 +18,7 @@ import AllArticles from "./pages/Artcle/AllArticles";
 import BloodDonorsSection from "./pages/BloodDonor/BloodDonors";
 import AllBloodDonors from "./pages/BloodDonor/AllBloodDonors";
 import UserProfile from "./pages/Auth/profile";
+import ArticleDetail from "./pages/Artcle/ArticleDetail";
 
 function Layout({ children }) {
   const location = useLocation();
@@ -53,6 +54,7 @@ function App() {
           <Route path="/all-blood-requests" element={<AllBloodRequests />} />
           <Route path="/all-blood-donors" element={<AllBloodDonors />} />
           <Route path="/all-articles" element={<AllArticles />} />
+          <Route path="/articles/:id" element={<ArticleDetail />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegistrationForm />} />
           <Route path="/profile/:id" element={<UserProfile />} />

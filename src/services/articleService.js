@@ -6,6 +6,12 @@ class ArticleService {
   get(pageNumber, size) {
     return axiosClient.get(`${API_URL}?pageNumber=${pageNumber}&size=${size}`);
   }
+
+  getArticleById(id) {
+    return axiosClient.get(`${API_URL}/${id}`);
+  }
+  
+
 }
 
 export default new ArticleService();

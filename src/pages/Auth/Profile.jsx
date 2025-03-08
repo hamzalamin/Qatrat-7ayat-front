@@ -1,49 +1,76 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Droplet, 
-  Map, 
-  Users, 
-  Edit, 
-  Save, 
-  X, 
-  Heart, 
+import React, { useState, useEffect } from "react";
+import {
+  Droplet,
+  Map,
+  Users,
+  Edit,
+  Save,
+  X,
+  Heart,
   Award,
   Clock,
   Lock,
   Phone,
   User,
-  Mail
-} from 'lucide-react';
-import ProfileService from '../../services/profileService';
-import AuthService from '../../services/authService';
-import { useNavigate } from 'react-router-dom';
+  Mail,
+  Calendar,
+  AlertTriangle,
+  Check,
+  ChevronRight,
+} from "lucide-react";
+import ProfileService from "../../services/profileService";
+import AuthService from "../../services/authService";
+import { useNavigate } from "react-router-dom";
+import CityService from "../../services/cityService";
 
 const bloodTypeOptions = [
-  { value: "A_PLUS", label: "A+", color: "text-red-600" },
-  { value: "A_MOINS", label: "A-", color: "text-red-500" },
-  { value: "B_PLUS", label: "B+", color: "text-orange-600" },
-  { value: "B_MOINS", label: "B-", color: "text-orange-500" },
-  { value: "AB_PLUS", label: "AB+", color: "text-purple-600" },
-  { value: "AB_MOINS", label: "AB-", color: "text-purple-500" },
-  { value: "O_PLUS", label: "O+", color: "text-green-600" },
-  { value: "O_MOINS", label: "O-", color: "text-green-500" }
+  { value: "A_PLUS", label: "A+", color: "text-primary-500" },
+  { value: "A_MOINS", label: "A-", color: "text-primary-400" },
+  { value: "B_PLUS", label: "B+", color: "text-primary-600" },
+  { value: "B_MOINS", label: "B-", color: "text-primary-500" },
+  { value: "AB_PLUS", label: "AB+", color: "text-secondary-500" },
+  { value: "AB_MOINS", label: "AB-", color: "text-secondary-400" },
+  { value: "O_PLUS", label: "O+", color: "text-accent-500" },
+  { value: "O_MOINS", label: "O-", color: "text-accent-400" },
 ];
 
 const DonationBadge = ({ donationCount }) => {
   const getBadgeLevel = (count) => {
-    if (count < 5) return { level: "متبرع مبتدئ", icon: <Heart className="w-8 h-8 text-pink-500" /> };
-    if (count < 10) return { level: "متبرع بطل", icon: <Award className="w-8 h-8 text-yellow-500" /> };
-    return { level: "متبرع محترف", icon: <Clock className="w-8 h-8 text-red-500" /> };
+    if (count < 5)
+      return {
+        level: "متبرع مبتدئ",
+        icon: <Heart className="w-10 h-10 text-primary-400" />,
+        bgColor: "bg-primary-50",
+        textColor: "text-primary-700",
+        borderColor: "border-primary-300",
+      };
+    if (count < 10)
+      return {
+        level: "متبرع بطل",
+        icon: <Award className="w-10 h-10 text-secondary-500" />,
+        bgColor: "bg-secondary-50",
+        textColor: "text-secondary-700",
+        borderColor: "border-secondary-300",
+      };
+    return {
+      level: "متبرع محترف",
+      icon: <Clock className="w-10 h-10 text-accent-500" />,
+      bgColor: "bg-accent-50",
+      textColor: "text-accent-700",
+      borderColor: "border-accent-300",
+    };
   };
 
   const badge = getBadgeLevel(donationCount);
 
   return (
-    <div className="flex items-center space-x-2 bg-white rounded-lg p-4 shadow-lg border-r-4 border-green-600">
+    <div
+      className={`flex items-center gap-4 ${badge.bgColor} rounded-xl p-5 shadow-md border ${badge.borderColor} transition-all hover:shadow-lg`}
+    >
       {badge.icon}
-      <div className="mr-2 text-right">
-        <p className="font-bold text-lg">{badge.level}</p>
-        <p className="text-sm text-gray-500">{donationCount} تبرعات</p>
+      <div className="text-right">
+        <p className={`font-kufi font-bold text-xl ${badge.textColor}`}>{badge.level}</p>
+        <p className="text-sm text-neutral-600 font-ibm mt-1">{donationCount} تبرعات</p>
       </div>
     </div>
   );
@@ -56,11 +83,13 @@ const UserProfile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
-  const [passwordError, setPasswordError] = useState('');
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [cities, setCities] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -70,10 +99,10 @@ const UserProfile = () => {
         setUser(profileData.data);
         setIsLoading(false);
       } catch (err) {
-        setError('فشل في تحميل الملف الشخصي');
+        setError("فشل في تحميل الملف الشخصي");
         setIsLoading(false);
         if (err.response && err.response.status === 401) {
-          navigate('/login');
+          navigate("/login");
         }
       }
     };
@@ -81,16 +110,28 @@ const UserProfile = () => {
     fetchProfile();
   }, [navigate]);
 
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await CityService.getCities(0, 100);
+        setCities(response.data);
+      } catch (error) {
+        console.error("Failed to fetch cities:", error);
+      }
+    };
+
+    fetchCities();
+  }, []);
+
   const handleEdit = () => {
     if (user) {
       setEditedUser({
         firstName: user.firstName,
         lastName: user.lastName,
-        email: user.email || '',
-        psudoName: user.psudoName || '',
+        psudoName: user.psudoName || "",
         phone: user.phone,
         bloodType: user.bloodType,
-        cityId: user.city.id
+        cityId: user.city.id,
       });
       setIsEditing(true);
     }
@@ -104,7 +145,7 @@ const UserProfile = () => {
         setUser(updatedProfile.data);
         setIsEditing(false);
       } catch (err) {
-        setError('فشل في تحديث الملف الشخصي');
+        setError("فشل في تحديث الملف الشخصي");
       } finally {
         setIsLoading(false);
       }
@@ -112,341 +153,519 @@ const UserProfile = () => {
   };
 
   const handlePasswordChange = async () => {
+    setPasswordError("");
+    setPasswordSuccess("");
+
     // Validate passwords
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError('كلمات المرور غير متطابقة');
+      setPasswordError("كلمات المرور غير متطابقة");
       return;
     }
-    
+
     if (passwordData.newPassword.length < 6) {
-      setPasswordError('كلمة المرور يجب أن تكون على الأقل 6 أحرف');
+      setPasswordError("كلمة المرور يجب أن تكون على الأقل 6 أحرف");
       return;
     }
-    
+
     try {
-      // Assuming you have a method to change password in your AuthService
-      await AuthService.changePassword(passwordData);
+      await ProfileService.changePassword(
+        user.id,
+        passwordData.currentPassword,
+        passwordData.newPassword
+      );
+
       setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
       });
-      setPasswordError('');
-      alert('تم تغيير كلمة المرور بنجاح');
+
+      setPasswordSuccess("تم تغيير كلمة المرور بنجاح");
     } catch (err) {
-      setPasswordError('فشل في تغيير كلمة المرور');
+      setPasswordError("فشل في تغيير كلمة المرور");
     }
   };
 
   const handleDelete = async () => {
-    if (window.confirm('هل أنت متأكد من رغبتك في حذف حسابك؟ لا يمكن التراجع عن هذا الإجراء.')) {
+    if (
+      window.confirm("هل أنت متأكد من رغبتك في حذف حسابك؟ لا يمكن التراجع عن هذا الإجراء.")
+    ) {
       try {
         await ProfileService.deleteProfile(user.id);
-        AuthService.clearAuth(); // Clear authentication state
-        navigate('/login');
+        AuthService.clearAuth();
+        navigate("/login");
       } catch (err) {
-        setError('فشل في حذف الحساب');
+        setError("فشل في حذف الحساب");
       }
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditedUser(prev => ({ ...prev, [name]: value }));
+    setEditedUser((prev) => ({ ...prev, [name]: value }));
   };
 
   const handlePasswordInputChange = (e) => {
     const { name, value } = e.target;
-    setPasswordData(prev => ({ ...prev, [name]: value }));
+    setPasswordData((prev) => ({ ...prev, [name]: value }));
   };
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center">جاري التحميل...</div>;
-  if (error) return <div className="text-red-500 text-center p-4">{error}</div>;
+  if (isLoading)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-32 h-32 bg-primary-100 rounded-full mb-4"></div>
+          <div className="h-6 w-64 bg-neutral-200 rounded mb-4"></div>
+          <div className="h-4 w-40 bg-neutral-200 rounded"></div>
+        </div>
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+        <div className="bg-primary-50 text-primary-700 p-6 rounded-xl shadow-md border border-primary-200 max-w-md">
+          <div className="flex items-center gap-3 mb-3">
+            <AlertTriangle className="w-6 h-6 text-primary-500" />
+            <h2 className="text-xl font-bold font-kufi">خطأ</h2>
+          </div>
+          <p className="font-ibm">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 py-2 px-4 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors font-kufi"
+          >
+            إعادة المحاولة
+          </button>
+        </div>
+      </div>
+    );
+
   if (!user) return null;
 
-  const selectedBloodType = bloodTypeOptions.find(bt => bt.value === user.bloodType);
+  const selectedBloodType = bloodTypeOptions.find((bt) => bt.value === user.bloodType);
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-100 p-4 md:p-8">
-      <div className="w-full max-w-5xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
-        {/* Profile Header */}
-        <div className="bg-green-700 text-white p-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">الملف الشخصي للمتبرع</h1>
-            <p className="text-white/80">رحلتك لإنقاذ الأرواح</p>
-          </div>
-          <div className="flex space-x-2">
-            {isEditing ? (
-              <>
-                <button 
-                  onClick={handleSave}
-                  className="bg-green-500 hover:bg-green-600 p-2 rounded-lg ml-2"
-                >
-                  <Save className="w-6 h-6" />
-                </button>
-                <button 
-                  onClick={() => setIsEditing(false)}
-                  className="bg-red-500 hover:bg-red-600 p-2 rounded-lg"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </>
-            ) : (
-              <button 
-                onClick={handleEdit}
-                className="bg-white/20 hover:bg-white/30 p-2 rounded-lg"
-              >
-                <Edit className="w-6 h-6" />
-              </button>
-            )}
-          </div>
+    <div dir="rtl" className="min-h-screen bg-neutral-50 py-8 px-4 font-cairo">
+      <div className="w-full max-w-5xl mx-auto">
+        {/* Page Header */}
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl md:text-4xl font-bold font-kufi text-primary-700 mb-2">
+            الملف الشخصي للمتبرع
+          </h1>
+          <p className="text-neutral-600 font-ibm">مرحباً بك في رحلتك لإنقاذ الأرواح</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
-          {/* Personal Information */}
-          <div className="md:col-span-2 bg-white p-6 rounded-xl shadow-md border border-gray-200">
-            <h2 className="text-2xl font-bold text-green-700 mb-4 border-r-4 border-green-600 pr-2">البيانات الشخصية</h2>
-            {isEditing ? (
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">الاسم الأول</label>
-                  <div className="relative">
-                    <User className="absolute top-3 right-3 w-5 h-5 text-gray-400" />
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={editedUser?.firstName || ''}
-                      onChange={handleInputChange}
-                      placeholder="الاسم الأول"
-                      className="w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    />
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Sidebar - User Stats */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Profile Card */}
+            <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-neutral-200">
+              <div className="bg-gradient-to-r from-primary-600 to-primary-500 p-6 text-white">
+                <div className="flex justify-between items-center mb-4">
+                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                    <Droplet className={`w-8 h-8 ${selectedBloodType.color}`} />
                   </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">الاسم الأخير</label>
-                  <div className="relative">
-                    <User className="absolute top-3 right-3 w-5 h-5 text-gray-400" />
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={editedUser?.lastName || ''}
-                      onChange={handleInputChange}
-                      placeholder="الاسم الأخير"
-                      className="w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">البريد الإلكتروني</label>
-                  <div className="relative">
-                    <Mail className="absolute top-3 right-3 w-5 h-5 text-gray-400" />
-                    <input
-                      type="email"
-                      name="email"
-                      value={editedUser?.email || ''}
-                      onChange={handleInputChange}
-                      placeholder="البريد الإلكتروني"
-                      className="w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">رقم الهاتف</label>
-                  <div className="relative">
-                    <Phone className="absolute top-3 right-3 w-5 h-5 text-gray-400" />
-                    <input
-                      type="text"
-                      name="phone"
-                      value={editedUser?.phone || ''}
-                      onChange={handleInputChange}
-                      placeholder="رقم الهاتف"
-                      className="w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">الاسم المستعار</label>
-                  <div className="relative">
-                    <User className="absolute top-3 right-3 w-5 h-5 text-gray-400" />
-                    <input
-                      type="text"
-                      name="psudoName"
-                      value={editedUser?.psudoName || ''}
-                      onChange={handleInputChange}
-                      placeholder="الاسم المستعار (اختياري)"
-                      className="w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">فصيلة الدم</label>
-                  <div className="relative">
-                    <Droplet className="absolute top-3 right-3 w-5 h-5 text-red-500" />
-                    <select
-                      name="bloodType"
-                      value={editedUser?.bloodType || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  {isEditing ? (
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={handleSave}
+                        className="bg-white text-primary-600 p-2 rounded-lg hover:bg-primary-50 transition-colors ml-2"
+                      >
+                        <Save className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => setIsEditing(false)}
+                        className="bg-white/20 hover:bg-white/30 p-2 rounded-lg transition-colors"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleEdit}
+                      className="bg-white/20 hover:bg-white/30 p-2 rounded-lg transition-colors"
                     >
-                      {bloodTypeOptions.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                      <Edit className="w-5 h-5" />
+                    </button>
+                  )}
                 </div>
+                <h2 className="text-2xl font-bold font-kufi">
+                  {user.firstName} {user.lastName}
+                </h2>
+                <p className="text-white/80 mt-1 font-ibm">
+                  {selectedBloodType.label} فصيلة الدم
+                </p>
               </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center p-3 bg-gray-50 rounded-lg shadow-sm">
-                  <Users className="w-6 h-6 text-green-600 ml-3" />
-                  <div>
-                    <span className="text-sm text-gray-500">الاسم الكامل</span>
-                    <p className="font-semibold">{user.firstName} {user.lastName}</p>
-                  </div>
+
+              <div className="p-4">
+                <div className="flex justify-between items-center p-3 bg-neutral-50 rounded-lg mb-3">
+                  <span className="font-bold text-secondary-600">{user.city.cityName}</span>
+                  <span className="text-neutral-600">المدينة</span>
                 </div>
-                
+
+                <div className="flex justify-between items-center p-3 bg-neutral-50 rounded-lg">
+                  <span className="font-bold text-secondary-600">{user.phone}</span>
+                  <span className="text-neutral-600">رقم الهاتف</span>
+                </div>
+
                 {user.email && (
-                  <div className="flex items-center p-3 bg-gray-50 rounded-lg shadow-sm">
-                    <Mail className="w-6 h-6 text-green-600 ml-3" />
-                    <div>
-                      <span className="text-sm text-gray-500">البريد الإلكتروني</span>
-                      <p className="font-semibold">{user.email}</p>
-                    </div>
+                  <div className="flex justify-between items-center p-3 mt-3 bg-neutral-50 rounded-lg">
+                    <span className="font-bold text-secondary-600 text-sm">{user.email}</span>
+                    <span className="text-neutral-600">البريد الإلكتروني</span>
                   </div>
                 )}
-                
-                <div className="flex items-center p-3 bg-gray-50 rounded-lg shadow-sm">
-                  <Phone className="w-6 h-6 text-green-600 ml-3" />
-                  <div>
-                    <span className="text-sm text-gray-500">رقم الهاتف</span>
-                    <p className="font-semibold">{user.phone}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center p-3 bg-gray-50 rounded-lg shadow-sm">
-                  <Droplet className={`w-6 h-6 ml-3 ${selectedBloodType.color}`} />
-                  <div>
-                    <span className="text-sm text-gray-500">فصيلة الدم</span>
-                    <p className="font-semibold">{selectedBloodType.label}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center p-3 bg-gray-50 rounded-lg shadow-sm">
-                  <Map className="w-6 h-6 text-green-600 ml-3" />
-                  <div>
-                    <span className="text-sm text-gray-500">المدينة</span>
-                    <p className="font-semibold">{user.city.cityName}</p>
-                  </div>
-                </div>
-                
+
                 {user.psudoName && (
-                  <div className="flex items-center p-3 bg-gray-50 rounded-lg shadow-sm">
-                    <User className="w-6 h-6 text-green-600 ml-3" />
-                    <div>
-                      <span className="text-sm text-gray-500">الاسم المستعار</span>
-                      <p className="font-semibold">{user.psudoName}</p>
+                  <div className="flex justify-between items-center p-3 mt-3 bg-neutral-50 rounded-lg">
+                    <span className="font-bold text-secondary-600">{user.psudoName}</span>
+                    <span className="text-neutral-600">الاسم المستعار</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Donation Badge */}
+            <DonationBadge donationCount={user.donationCount || 0} />
+
+            {/* Next Donation Card */}
+            <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-neutral-200">
+              <div className="bg-gradient-to-r from-accent-600 to-accent-500 p-4 text-white">
+                <h3 className="font-bold text-lg font-kufi">التبرع القادم</h3>
+              </div>
+              <div className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="w-6 h-6 text-accent-500" />
+                    <span className="font-bold text-accent-700">
+                      {user.nextEligibleDonationDate
+                        ? new Date(user.nextEligibleDonationDate).toLocaleDateString("ar-EG")
+                        : "غير متاح حالياً"}
+                    </span>
+                  </div>
+                  <span className="text-neutral-600">تاريخ الأهلية</span>
+                </div>
+                {user.nextEligibleDonationDate && (
+                  <div className="mt-4 text-sm text-neutral-600 bg-accent-50 p-3 rounded-lg border border-accent-100">
+                    <p>يرجى الانتظار حتى هذا التاريخ للتبرع مرة أخرى للحفاظ على صحتك وسلامة المتلقين.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg p-4 text-sm text-neutral-600 flex justify-between items-center border border-neutral-200">
+              <span>تاريخ إنشاء الحساب:</span>
+              <span>{new Date(user.createdAt).toLocaleDateString()}</span>
+            </div>
+          </div>
+
+
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-neutral-200">
+              <div className="bg-gradient-to-r from-secondary-600 to-secondary-500 p-4 text-white flex justify-between items-center">
+                <h2 className="text-xl font-bold font-kufi">البيانات الشخصية</h2>
+                {!isEditing && (
+                  <button
+                    onClick={handleEdit}
+                    className="bg-white/20 hover:bg-white/30 p-2 rounded-lg transition-colors text-sm font-ibm flex items-center gap-1"
+                  >
+                    <Edit className="w-4 h-4" />
+                    تعديل
+                  </button>
+                )}
+              </div>
+
+              <div className="p-6">
+                {isEditing ? (
+                  <div className="grid md:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-neutral-700 font-ibm">
+                        الاسم الأول
+                      </label>
+                      <div className="relative">
+                        <User className="absolute top-3 right-3 w-5 h-5 text-neutral-400" />
+                        <input
+                          type="text"
+                          name="firstName"
+                          value={editedUser?.firstName || ""}
+                          onChange={handleInputChange}
+                          placeholder="الاسم الأول"
+                          className="w-full px-4 py-3 pr-10 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-neutral-700 font-ibm">
+                        الاسم الأخير
+                      </label>
+                      <div className="relative">
+                        <User className="absolute top-3 right-3 w-5 h-5 text-neutral-400" />
+                        <input
+                          type="text"
+                          name="lastName"
+                          value={editedUser?.lastName || ""}
+                          onChange={handleInputChange}
+                          placeholder="الاسم الأخير"
+                          className="w-full px-4 py-3 pr-10 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-neutral-700 font-ibm">
+                        المدينة
+                      </label>
+                      <div className="relative">
+                        <Map className="absolute top-3 right-3 w-5 h-5 text-neutral-400" />
+                        <select
+                          name="cityId"
+                          value={editedUser?.cityId || ""}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 pr-10 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white appearance-none"
+                        >
+                          <option value="" disabled>
+                            اختر المدينة
+                          </option>
+                          {cities.map((city) => (
+                            <option key={city.id} value={city.id}>
+                              {city.cityName}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                          <ChevronRight className="w-5 h-5 text-neutral-400 rotate-180" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-neutral-700 font-ibm">
+                        رقم الهاتف
+                      </label>
+                      <div className="relative">
+                        <Phone className="absolute top-3 right-3 w-5 h-5 text-neutral-400" />
+                        <input
+                          type="text"
+                          name="phone"
+                          value={editedUser?.phone || ""}
+                          onChange={handleInputChange}
+                          placeholder="رقم الهاتف"
+                          className="w-full px-4 py-3 pr-10 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-neutral-700 font-ibm">
+                        الاسم المستعار
+                      </label>
+                      <div className="relative">
+                        <User className="absolute top-3 right-3 w-5 h-5 text-neutral-400" />
+                        <input
+                          type="text"
+                          name="psudoName"
+                          value={editedUser?.psudoName || ""}
+                          onChange={handleInputChange}
+                          placeholder="الاسم المستعار (اختياري)"
+                          className="w-full px-4 py-3 pr-10 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-neutral-700 font-ibm">
+                        فصيلة الدم
+                      </label>
+                      <div className="relative">
+                        <Droplet className="absolute top-3 right-3 w-5 h-5 text-primary-500" />
+                        <select
+                          name="bloodType"
+                          value={editedUser?.bloodType || ""}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 pr-10 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white appearance-none"
+                        >
+                          {bloodTypeOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                          <ChevronRight className="w-5 h-5 text-neutral-400 rotate-180" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-2 flex justify-end mt-4 gap-3">
+                      <button
+                        onClick={() => setIsEditing(false)}
+                        className="px-6 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors text-neutral-700 font-ibm"
+                      >
+                        إلغاء
+                      </button>
+                      <button
+                        onClick={handleSave}
+                        className="px-6 py-2 bg-secondary-500 text-white rounded-lg hover:bg-secondary-600 transition-colors font-ibm"
+                      >
+                        حفظ التغييرات
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <div className="flex flex-col md:flex-row justify-center gap-4 md:gap-8 mb-6">
+                      <div className="flex-1 flex flex-col items-center p-5 bg-secondary-50 rounded-xl">
+                        <Users className="w-8 h-8 text-secondary-500 mb-2" />
+                        <h3 className="text-secondary-700 font-semibold">الاسم الكامل</h3>
+                        <p className="font-kufi text-lg mt-1">
+                          {user.firstName} {user.lastName}
+                        </p>
+                      </div>
+
+                      <div className="flex-1 flex flex-col items-center p-5 bg-primary-50 rounded-xl">
+                        <Droplet className={`w-8 h-8 ${selectedBloodType.color} mb-2`} />
+                        <h3 className="text-primary-700 font-semibold">فصيلة الدم</h3>
+                        <p className="font-kufi text-lg mt-1">
+                          {selectedBloodType.label}
+                        </p>
+                      </div>
+
+                      <div className="flex-1 flex flex-col items-center p-5 bg-accent-50 rounded-xl">
+                        <Map className="w-8 h-8 text-accent-500 mb-2" />
+                        <h3 className="text-accent-700 font-semibold">المدينة</h3>
+                        <p className="font-kufi text-lg mt-1">
+                          {user.city.cityName}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-neutral-50 p-4 rounded-xl text-center mx-auto max-w-md">
+                      <p className="text-sm text-neutral-600 font-ibm">
+                        يمكنك تعديل بياناتك الشخصية في أي وقت بالنقر على زر تعديل أعلاه
+                      </p>
                     </div>
                   </div>
                 )}
               </div>
-            )}
-          </div>
+            </div>
 
-          <div className="space-y-6">
-            <DonationBadge donationCount={user.donationCount || 0} />
-            
-            <div className="bg-white shadow-md rounded-lg p-4 border border-gray-200">
-              <h3 className="font-bold text-lg mb-2 text-green-700">التبرع القادم</h3>
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-green-600">
-                  {user.nextEligibleDonationDate 
-                    ? new Date(user.nextEligibleDonationDate).toLocaleDateString('ar-EG')
-                    : 'غير متاح'}
-                </span>
-                <span className="text-gray-600">:تاريخ الأهلية</span>
+            <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-neutral-200">
+              <div className="bg-gradient-to-r from-primary-600 to-primary-500 p-4 text-white">
+                <h3 className="font-bold text-xl font-kufi">تغيير كلمة المرور</h3>
+              </div>
+
+              <div className="p-6">
+                {passwordError && (
+                  <div className="bg-primary-50 text-primary-700 p-4 rounded-lg mb-4 flex items-center gap-2 border border-primary-200">
+                    <AlertTriangle className="w-5 h-5 text-primary-500 flex-shrink-0" />
+                    <p className="text-sm">{passwordError}</p>
+                  </div>
+                )}
+
+                {passwordSuccess && (
+                  <div className="bg-accent-50 text-accent-700 p-4 rounded-lg mb-4 flex items-center gap-2 border border-accent-200">
+                    <Check className="w-5 h-5 text-accent-500 flex-shrink-0" />
+                    <p className="text-sm">{passwordSuccess}</p>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-neutral-700 font-ibm">
+                      كلمة المرور الحالية
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute top-3 right-3 w-5 h-5 text-neutral-400" />
+                      <input
+                        type="password"
+                        name="currentPassword"
+                        value={passwordData.currentPassword}
+                        onChange={handlePasswordInputChange}
+                        placeholder="كلمة المرور الحالية"
+                        className="w-full px-4 py-3 pr-10 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-neutral-700 font-ibm">
+                        كلمة المرور الجديدة
+                      </label>
+                      <div className="relative">
+                        <Lock className="absolute top-3 right-3 w-5 h-5 text-neutral-400" />
+                        <input
+                          type="password"
+                          name="newPassword"
+                          value={passwordData.newPassword}
+                          onChange={handlePasswordInputChange}
+                          placeholder="كلمة المرور الجديدة"
+                          className="w-full px-4 py-3 pr-10 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-neutral-700 font-ibm">
+                        تأكيد كلمة المرور
+                      </label>
+                      <div className="relative">
+                        <Lock className="absolute top-3 right-3 w-5 h-5 text-neutral-400" />
+                        <input
+                          type="password"
+                          name="confirmPassword"
+                          value={passwordData.confirmPassword}
+                          onChange={handlePasswordInputChange}
+                          placeholder="تأكيد كلمة المرور"
+                          className="w-full px-4 py-3 pr-10 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handlePasswordChange}
+                    className="w-full bg-primary-500 text-white py-3 rounded-lg hover:bg-primary-600 transition-colors font-kufi"
+                  >
+                    تغيير كلمة المرور
+                  </button>
+
+                  <div className="text-sm text-neutral-600 bg-neutral-50 p-3 rounded-lg">
+                    <p>ملاحظة: يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل. يفضل استخدام مزيج من الأحرف والأرقام والرموز للحصول على كلمة مرور أكثر أماناً.</p>
+                  </div>
+                </div>
               </div>
             </div>
-            
-            {/* Password Change Section */}
-            <div className="bg-white shadow-md rounded-lg p-4 border border-gray-200">
-              <h3 className="font-bold text-lg mb-3 text-green-700 border-r-4 border-green-600 pr-2">تغيير كلمة المرور</h3>
-              {passwordError && <p className="text-red-500 text-sm mb-2">{passwordError}</p>}
-              
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">كلمة المرور الحالية</label>
-                  <div className="relative">
-                    <Lock className="absolute top-3 right-3 w-5 h-5 text-gray-400" />
-                    <input
-                      type="password"
-                      name="currentPassword"
-                      value={passwordData.currentPassword}
-                      onChange={handlePasswordInputChange}
-                      placeholder="كلمة المرور الحالية"
-                      className="w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    />
-                  </div>
+
+            <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-neutral-200">
+              <div className="bg-gradient-to-r from-red-600 to-red-500 p-4 text-white">
+                <h3 className="font-bold text-xl font-kufi">حذف الحساب</h3>
+              </div>
+
+              <div className="p-6">
+                <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-4 flex items-center gap-3 border border-red-200">
+                  <AlertTriangle className="w-6 h-6 text-red-500 flex-shrink-0" />
+                  <p className="text-sm font-ibm">
+                    حذف الحساب إجراء دائم ولا يمكن التراجع عنه. سيتم حذف جميع بياناتك الشخصية والتبرعات المرتبطة بحسابك.
+                  </p>
                 </div>
-                
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">كلمة المرور الجديدة</label>
-                  <div className="relative">
-                    <Lock className="absolute top-3 right-3 w-5 h-5 text-gray-400" />
-                    <input
-                      type="password"
-                      name="newPassword"
-                      value={passwordData.newPassword}
-                      onChange={handlePasswordInputChange}
-                      placeholder="كلمة المرور الجديدة"
-                      className="w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">تأكيد كلمة المرور</label>
-                  <div className="relative">
-                    <Lock className="absolute top-3 right-3 w-5 h-5 text-gray-400" />
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      value={passwordData.confirmPassword}
-                      onChange={handlePasswordInputChange}
-                      placeholder="تأكيد كلمة المرور"
-                      className="w-full px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    />
-                  </div>
-                </div>
-                
+
                 <button
-                  onClick={handlePasswordChange}
-                  className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors"
+                  onClick={handleDelete}
+                  className="w-full bg-red-500 text-white py-3 rounded-lg hover:bg-red-600 transition-colors font-kufi flex items-center justify-center gap-2"
                 >
-                  تغيير كلمة المرور
+                  <X className="w-5 h-5" />
+                  حذف الحساب
                 </button>
+
+                <div className="mt-4 text-sm text-neutral-600 bg-neutral-50 p-3 rounded-lg">
+                  <p className="font-ibm">
+                    إذا كنت تواجه مشكلة أو تحتاج إلى مساعدة، يرجى الاتصال بفريق الدعم قبل حذف حسابك.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div className="bg-gray-100 p-6 flex justify-between items-center">
-          <button 
-            onClick={handleDelete}
-            className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors"
-          >
-            حذف الحساب
-          </button>
-          <div>
-            <p className="text-sm text-gray-600">
-              تاريخ إنشاء الحساب: {new Date(user.createdAt).toLocaleDateString('ar-EG')}
-            </p>
           </div>
         </div>
       </div>
