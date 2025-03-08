@@ -84,7 +84,6 @@ const AllBloodDonors = () => {
       setLoading(true);
       try {
         const response = await DonorService.getAllDonors(pageNumber, size);
-        console.log("API Response:", response);
 
         if (!response.data || !response.data.content) {
           throw new Error("Invalid API response structure");

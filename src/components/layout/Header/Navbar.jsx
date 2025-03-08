@@ -46,12 +46,12 @@ const Navbar = () => {
       const loggedIn = AuthService.isAuthenticated();
       setIsLoggedIn(loggedIn);
     };
-
+  
     checkAuth();
-    window.addEventListener("authChange", checkAuth);
-
+    window.addEventListener('authChange', checkAuth);
+  
     return () => {
-      window.removeEventListener("authChange", checkAuth);
+      window.removeEventListener('authChange', checkAuth);
     };
   }, []);
 

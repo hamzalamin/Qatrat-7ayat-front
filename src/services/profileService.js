@@ -12,6 +12,13 @@ class ProfileService {
   deleteProfile(profileId) {
     return axiosClient.delete(`v1/profile/${profileId}`);
   }
+
+  changePassword(profileId, oldPassword, newPassword) {
+    return axiosClient.put(`v1/profile/change-password/${profileId}`, {
+      oldPassword,
+      newPassword
+    });
+  }
 }
 
 export default new ProfileService();

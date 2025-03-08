@@ -11,9 +11,9 @@ class AuthService {
       })
       .then(response => {
         if (response.data.token) {
-          localStorage.setItem('token', response.data.token); 
-          localStorage.setItem('user', JSON.stringify(response.data)); 
-          window.dispatchEvent(new Event("authChange"));
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('user', JSON.stringify(response.data));
+          window.dispatchEvent(new Event('authChange'));
         }
         return response.data;
       });
@@ -21,45 +21,52 @@ class AuthService {
 
   logout() {
     localStorage.removeItem('user');
-    window.dispatchEvent(new Event("authChange")); 
+    localStorage.removeItem('token'); // Clear token
+    window.dispatchEvent(new Event('authChange'));
   }
 
   register(userData) {
     return axiosClient.post(API_URL + 'signup', {
       firstName: userData.firstName,
       lastName: userData.lastName,
-      psudoName: userData.pseudoName, 
+      psudoName: userData.pseudoName,
       email: userData.email,
       password: userData.password,
       phone: userData.phone,
       bloodType: userData.bloodType,
       gender: userData.gender,
-      cityId: userData.city,  
+      cityId: userData.city,
       isFirstTimeDonor: userData.isFirstTimeDonor,
       hasChronicDiseases: userData.hasChronicDiseases
     });
   }
 
   getCurrentUser() {
-    return JSON.parse(localStorage.getItem('user'));
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null; // Handle null case
   }
 
   isAuthenticated() {
-    const user = this.getCurrentUser();
-    return !!user && !!user.token;
+    return !!localStorage.getItem('token'); // Check for token directly
   }
 
   async getUserProfile() {
-    const user = this.getCurrentUser();
-    if (user && user.token) {
+    const token = localStorage.getItem('token');
+    if (token) {
       const response = await axiosClient.get('v1/profile', {
         headers: {
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       return response.data;
     }
     return null;
+  }
+
+  clearAuth() {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    window.dispatchEvent(new Event('authChange'));
   }
 }
 
