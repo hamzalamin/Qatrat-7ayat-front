@@ -114,7 +114,7 @@ const AllBloodDonors = () => {
         setTotalPages(response.data.totalPages);
       } catch (error) {
         console.error("Error fetching donors:", error);
-        setRequests([]); 
+        setRequests([]);
         setFilteredRequests([]);
       } finally {
         setLoading(false);
@@ -506,7 +506,7 @@ const AllBloodDonors = () => {
                   <div className="mt-4 flex justify-between items-center">
                     <button className="bg-primary-500 hover:bg-primary-600 text-white px-3 py-2 rounded-lg font-kufi flex items-center">
                       <Phone className="w-4 h-4 mr-2" />
-                      اتصال {request.phone}
+                      {request.phone}
                     </button>
                     <div className="flex space-x-2 space-x-reverse">
                       <button className="p-2 hover:bg-neutral-100 rounded-lg">

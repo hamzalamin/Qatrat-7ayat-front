@@ -79,6 +79,15 @@ const AllBloodRequests = () => {
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState(false);
 
+  const mapUrgencyLevel = (urgency) => {
+    const urgencyMap = {
+      URGENCY_LOW: "عادي",
+      URGENCY_MEDIUM: "متوسط",
+      URGENCY_HIGH: "عاجل",
+    };
+    return urgencyMap[urgency] || urgency;
+  };
+
   useEffect(() => {
     const fetchRequests = async () => {
       setLoading(true);
@@ -106,7 +115,7 @@ const AllBloodRequests = () => {
           hospitalId: request.request.hospital.id,
           message: request.request.message,
           bloodVolume: request.request.bloodVolume,
-          urgencyLevel: request.request.urgencyLevel,
+          urgencyLevel: mapUrgencyLevel(request.request.urgencyLevel),
           status: "active",
         }));
 
@@ -504,7 +513,7 @@ const AllBloodRequests = () => {
                   <div className="mt-4 flex justify-between items-center">
                     <button className="bg-primary-500 hover:bg-primary-600 text-white px-3 py-2 rounded-lg font-kufi flex items-center">
                       <Phone className="w-4 h-4 mr-2" />
-                      اتصال {request.phone}
+                      {request.phone}
                     </button>
                     <div className="flex space-x-2 space-x-reverse">
                       <button className="p-2 hover:bg-neutral-100 rounded-lg">

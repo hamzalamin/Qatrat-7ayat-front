@@ -46,6 +46,7 @@ export default {
         // Neutral gray for backgrounds
         neutral: {
           50: "#F5F5F5",
+          60: "#ededed",
           100: "#EBEBEB",
           200: "#D6D6D6",
           300: "#C2C2C2",
