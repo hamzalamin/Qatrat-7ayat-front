@@ -102,7 +102,7 @@ const BloodRequestsSection = () => {
     );
   }
 
-  if (error) {
+  if (requests.length === 0 || error) {
     return (
       <div className="text-center py-16 bg-white rounded-lg border border-neutral-200">
         <div className="mx-auto w-16 h-16 text-neutral-400 mb-4">

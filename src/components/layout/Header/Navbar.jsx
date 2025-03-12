@@ -6,21 +6,31 @@ import {
   Book,
   Users,
   ClipboardList,
-  Bell,
-  Search,
   User,
   LogIn,
   UserPlus,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../../assets/images/qatrat-7ayat-logo.jpg";
-import AuthService from "../../../services/authService";
+import { useAuth } from "../../../context/AuthContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+
+  // Debugging: Log authentication state changes
+  useEffect(() => {
+    console.log("Authentication state changed", { isAuthenticated, user });
+  }, [isAuthenticated, user]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-16 bg-white shadow-lg">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
+      </div>
+    );
+  }
 
   const menuItems = [
     { path: "/", title: "الرئيسية", icon: <Home className="w-5 h-5" /> },
@@ -41,24 +51,18 @@ const Navbar = () => {
     },
   ];
 
-  useEffect(() => {
-    const checkAuth = () => {
-      const loggedIn = AuthService.isAuthenticated();
-      setIsLoggedIn(loggedIn);
-    };
-  
-    checkAuth();
-    window.addEventListener('authChange', checkAuth);
-  
-    return () => {
-      window.removeEventListener('authChange', checkAuth);
-    };
-  }, []);
-
   const handleLogout = () => {
-    AuthService.logout();
-    setIsLoggedIn(false);
+    logout();
     navigate("/");
+  };
+
+  const handleProfileClick = () => {
+    if (user && user.id) {
+      navigate(`/profile/${user.id}`);
+    } else {
+      console.error("User ID is not available");
+      navigate("/login");
+    }
   };
 
   return (
@@ -90,22 +94,15 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-4 space-x-reverse">
-            {isLoggedIn ? (
+            {isAuthenticated ? (
               <>
-                {/* Profile */}
                 <button
-                  onClick={() => {
-                    const user = AuthService.getCurrentUser(); 
-                    if (user && user.id) {
-                      navigate(`/profile/${user.id}`);
-                    }
-                  }}
+                  onClick={handleProfileClick}
                   className="relative p-2 hover:bg-neutral-50 rounded-full transition-colors duration-200"
                 >
                   <User className="w-6 h-6 text-neutral-600" />
                 </button>
 
-                {/* Logout */}
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 text-sm font-kufi text-red-600 hover:bg-red-50 rounded-full transition-colors duration-200"
@@ -115,7 +112,6 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                {/* Login */}
                 <button
                   onClick={() => navigate("/login")}
                   className="flex items-center space-x-2 space-x-reverse px-4 py-2 text-sm font-kufi text-primary-600 hover:bg-primary-50 rounded-full transition-colors duration-200"
@@ -124,7 +120,6 @@ const Navbar = () => {
                   <span>تسجيل الدخول</span>
                 </button>
 
-                {/* Register */}
                 <button
                   onClick={() => navigate("/register")}
                   className="flex items-center space-x-2 space-x-reverse px-4 py-2 text-sm font-kufi text-green-600 hover:bg-green-50 rounded-full transition-colors duration-200"
@@ -135,10 +130,10 @@ const Navbar = () => {
               </>
             )}
 
-            {/* Mobile Menu Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="md:hidden p-2 hover:bg-neutral-50 rounded-full transition-colors duration-200"
+              aria-label={isOpen ? "Close menu" : "Open menu"}
             >
               {isOpen ? (
                 <X className="w-6 h-6" />
@@ -150,13 +145,15 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden bg-white border-t">
           {menuItems.map((item) => (
             <button
               key={item.title}
-              onClick={() => navigate(item.path)}
+              onClick={() => {
+                navigate(item.path);
+                setIsOpen(false);
+              }}
               className="block px-3 py-2 text-neutral-600 hover:bg-neutral-50 rounded-lg transition-colors duration-200"
             >
               {item.icon}

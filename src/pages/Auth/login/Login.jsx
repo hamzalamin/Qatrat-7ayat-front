@@ -7,23 +7,24 @@ import {
   EyeOff, 
 } from "lucide-react";
 import logo from "../../../../src/assets/images/qatrat-7ayat-logo.jpg";
-import AuthService from "../../../services/authService";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 
-const CreativeLoginPage = () => {
+const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     
-    AuthService.login(email, password)
+    login(email, password)
       .then(() => {
         navigate('/'); 
       })
@@ -163,11 +164,10 @@ const CreativeLoginPage = () => {
           </div>
         </div>
 
-        {/* Subtle Background Pattern */}
         <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-l from-red-500 to-pink-500"></div>
       </div>
     </div>
   );
 };
 
-export default CreativeLoginPage;
+export default LoginPage;

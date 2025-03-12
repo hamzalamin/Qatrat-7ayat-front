@@ -3,26 +3,18 @@ import { axiosClient } from "../config/axios";
 const API_URL = 'auth/';
 
 class AuthService {
-  login(email, password) {
-    return axiosClient
-      .post(API_URL + 'signin', {
-        email,
-        password
-      })
-      .then(response => {
-        if (response.data.token) {
-          localStorage.setItem('token', response.data.token);
-          localStorage.setItem('user', JSON.stringify(response.data));
-          window.dispatchEvent(new Event('authChange'));
-        }
-        return response.data;
-      });
+  async login(email, password) {
+    const response = await axiosClient.post(API_URL + 'signin', { email, password });
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data));
+    }
+    return response.data;
   }
 
   logout() {
     localStorage.removeItem('user');
-    localStorage.removeItem('token'); // Clear token
-    window.dispatchEvent(new Event('authChange'));
+    localStorage.removeItem('token');
   }
 
   register(userData) {
@@ -43,30 +35,22 @@ class AuthService {
 
   getCurrentUser() {
     const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null; // Handle null case
+    return user ? JSON.parse(user) : null;
   }
 
   isAuthenticated() {
-    return !!localStorage.getItem('token'); // Check for token directly
+    return !!localStorage.getItem('token');
   }
 
   async getUserProfile() {
     const token = localStorage.getItem('token');
     if (token) {
       const response = await axiosClient.get('v1/profile', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
     }
     return null;
-  }
-
-  clearAuth() {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    window.dispatchEvent(new Event('authChange'));
   }
 }
 

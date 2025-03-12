@@ -1,23 +1,27 @@
 import { axiosClient } from "../config/axios";
 
 class ProfileService {
-  getProfile() {
-    return axiosClient.get("v1/profile");
+  async getProfile() {
+    const response = await axiosClient.get("v1/profile");
+    return response.data;
   }
 
-  updateProfile(profileId, profileData) {
-    return axiosClient.put(`v1/profile/${profileId}`, profileData);
+  async updateProfile(profileId, profileData) {
+    const response = await axiosClient.put(`v1/profile/${profileId}`, profileData);
+    return response.data;
   }
 
-  deleteProfile(profileId) {
-    return axiosClient.delete(`v1/profile/${profileId}`);
+  async deleteProfile(profileId) {
+    const response = await axiosClient.delete(`v1/profile/${profileId}`);
+    return response.data;
   }
 
-  changePassword(profileId, oldPassword, newPassword) {
-    return axiosClient.put(`v1/profile/change-password/${profileId}`, {
+  async changePassword(profileId, oldPassword, newPassword) {
+    const response = await axiosClient.put(`v1/profile/change-password/${profileId}`, {
       oldPassword,
-      newPassword
+      newPassword,
     });
+    return response.data;
   }
 }
 
