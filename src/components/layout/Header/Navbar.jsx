@@ -9,6 +9,7 @@ import {
   User,
   LogIn,
   UserPlus,
+  LayoutDashboard,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../../assets/images/qatrat-7ayat-logo.jpg";
@@ -19,10 +20,9 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading, logout } = useAuth();
 
-  // Debugging: Log authentication state changes
-  useEffect(() => {
-    console.log("Authentication state changed", { isAuthenticated, user });
-  }, [isAuthenticated, user]);
+  const isAdmin = user && user.roles && user.roles.includes("ROLE_ADMIN");
+
+  useEffect(() => {}, [isAuthenticated, user]);
 
   if (isLoading) {
     return (
@@ -51,6 +51,14 @@ const Navbar = () => {
     },
   ];
 
+  if (isAdmin) {
+    menuItems.push({
+      path: "/admin/dashboard",
+      title: "لوحة التحكم",
+      icon: <LayoutDashboard className="w-5 h-5" />,
+    });
+  }
+
   const handleLogout = () => {
     logout();
     navigate("/");
@@ -58,7 +66,7 @@ const Navbar = () => {
 
   const handleProfileClick = () => {
     if (user && user.id) {
-      navigate(`/profile/${user.id}`);
+      navigate(`/profile`);
     } else {
       console.error("User ID is not available");
       navigate("/login");
@@ -85,7 +93,11 @@ const Navbar = () => {
               <button
                 key={item.title}
                 onClick={() => navigate(item.path)}
-                className="flex items-center space-x-2 space-x-reverse px-3 py-2 text-neutral-600 hover:text-primary-500 transition-colors duration-200 font-kufi"
+                className={`flex items-center space-x-2 space-x-reverse px-3 py-2 transition-colors duration-200 font-kufi ${
+                  item.path.includes("admin")
+                    ? "text-neutral-600 hover:text-primary-500"
+                    : "text-neutral-600 hover:text-primary-500"
+                }`}
               >
                 {item.icon}
                 <span>{item.title}</span>
@@ -154,10 +166,14 @@ const Navbar = () => {
                 navigate(item.path);
                 setIsOpen(false);
               }}
-              className="block px-3 py-2 text-neutral-600 hover:bg-neutral-50 rounded-lg transition-colors duration-200"
+              className={`flex items-center space-x-2 space-x-reverse w-full px-4 py-3 text-right hover:bg-neutral-50 transition-colors duration-200 ${
+                item.path.includes("admin")
+                  ? "text-purple-600"
+                  : "text-neutral-600"
+              }`}
             >
-              {item.icon}
-              {item.title}
+              <span className="mr-3">{item.icon}</span>
+              <span>{item.title}</span>
             </button>
           ))}
         </div>

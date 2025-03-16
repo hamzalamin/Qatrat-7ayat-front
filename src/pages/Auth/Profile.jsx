@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import ProfileService from "../../services/profileService";
 import AuthService from "../../services/authService";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import CityService from "../../services/cityService";
 import { useAuth } from "../../context/AuthContext";
 
@@ -81,7 +81,6 @@ const DonationBadge = ({ donationCount }) => {
 };
 
 const UserProfile = () => {
-  const { id } = useParams();
   console.log("UserProfile component is mounting");
   const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -114,7 +113,7 @@ const UserProfile = () => {
         }
       }
     };
-
+  
     const fetchCities = async () => {
       try {
         const response = await CityService.getCities(0, 100);
@@ -123,12 +122,12 @@ const UserProfile = () => {
         console.error("Failed to fetch cities:", error);
       }
     };
-
-    if (authChecked) {
+  
+    if (authChecked && !user) {
       fetchProfile();
       fetchCities();
     }
-  }, [navigate, authChecked]);
+  }, [navigate, authChecked, user]);
 
 
 
@@ -237,7 +236,7 @@ const UserProfile = () => {
 
       setPasswordSuccess("تم تغيير كلمة المرور بنجاح");
     } catch (err) {
-      setPasswordError("فشل في تغيير كلمة المرور");
+      setPasswordError("كلمة المرور القديمة غير صحيحة");
     }
   };
 

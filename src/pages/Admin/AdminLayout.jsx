@@ -2,10 +2,20 @@ import React, { useState } from "react";
 import { Bell, Search, User, ChevronDown, Home } from "lucide-react";
 import Sidebar from "../../components/layout/Sidebar/Sidebar";
 import { Outlet } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+
 
 const AdminLayout = ({ children }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <div className="flex h-screen bg-neutral-50">
@@ -103,12 +113,12 @@ const AdminLayout = ({ children }) => {
                       Account Settings
                     </a>
                     <div className="border-t border-neutral-100 my-1"></div>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-primary-500 hover:bg-neutral-50 font-cairo"
+                    <button
+                      onClick={handleLogout}
+                      className="w-44 px-4 py-2 text-sm text-primary-500 hover:bg-neutral-50 font-cairo"
                     >
                       Logout
-                    </a>
+                    </button>
                   </div>
                 )}
               </div>

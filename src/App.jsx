@@ -30,6 +30,7 @@ import { AuthProvider } from "./context/AuthContext";
 import Error401 from "./components/layout/Exceptions/Error401";
 import Error403 from "./components/layout/Exceptions/Error403";
 import Error404 from "./components/layout/Exceptions/Error404";
+import RoleManagement from "./pages/Admin/RoleManagement";
 
 function Layout({ children }) {
   const location = useLocation();
@@ -83,7 +84,7 @@ function App() {
             <Route path="/articles/:id" element={<ArticleDetail />} />
             
             <Route
-              path="/profile/:id"
+              path="/profile"
               element={
                 <ProtectedRoute>
                   <UserProfile />
@@ -100,12 +101,10 @@ function App() {
               }
             >
               <Route index element={<AdminStatistics />} />
-              <Route
-                path="article-management"
-                element={<ArticleManagement />}
-              />
+              <Route path="article-management" element={<ArticleManagement />} />
               <Route path="user-management" element={<UserManagement />} />
               <Route path="tag-management" element={<TagManagement />} />
+              <Route path="role-management" element={<RoleManagement />} />
             </Route>
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="/forbidden" element={<Forbidden />} />

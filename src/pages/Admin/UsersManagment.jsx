@@ -391,7 +391,20 @@ const UserManagement = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Name
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      value={newUser.name}
+                      onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                      placeholder="Enter full name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Last Name
                     </label>
                     <input
                       type="text"
@@ -417,6 +430,19 @@ const UserManagement = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      value={newUser.email}
+                      onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                      placeholder="Enter email address"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Phone
                     </label>
                     <input
@@ -428,19 +454,7 @@ const UserManagement = () => {
                       placeholder="Enter phone number"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Department
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
-                      value={newUser.department}
-                      onChange={(e) => setNewUser({ ...newUser, department: e.target.value })}
-                      placeholder="Enter department"
-                    />
-                  </div>
+              
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Role

@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import {
   Home,
   Users,
-  Droplet,
   FileText,
   Settings,
   Bell,
   ChevronLeft,
   ChevronRight,
   Tag,
+  ShieldCheck,
 } from "lucide-react";
 import logo from '../../../assets/images/qatrat-7ayat-logo.jpg';
 
@@ -20,8 +20,8 @@ const Sidebar = () => {
     { link:"#" ,title: "Dashboard", icon: Home },
     { link:"dashboard/article-management" ,title: "Articles", icon: FileText },
     { link:"dashboard/tag-management" ,title: "Tags", icon: Tag },
-    { link: "dashboard/user-management", title: "Users", icon: Users },
-    { link:"#" ,title: "Donations", icon: Droplet },
+    { link:"dashboard/user-management", title: "Users", icon: Users },
+    { link:"dashboard/role-management" ,title: "Roles", icon: ShieldCheck },
     { link:"#" ,title: "Notifications", icon: Bell },
     { link:"#" ,title: "Settings", icon: Settings },
   ];
