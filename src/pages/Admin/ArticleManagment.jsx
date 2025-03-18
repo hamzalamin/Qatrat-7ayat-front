@@ -17,7 +17,6 @@ const ArticleManagement = () => {
       setLoading(true);
       try {
         const response = await ArticleService.get(pageNumber, size);
-        console.log(response.data.content); // Log the data to verify its structure
         setArticles(response.data.content);
         setTotalPages(response.data.totalPages);
       } catch (error) {

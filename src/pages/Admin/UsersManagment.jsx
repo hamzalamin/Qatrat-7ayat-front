@@ -1,126 +1,258 @@
-import React, { useState } from 'react';
-import { 
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  UserPlus,
-  User,
-  Pencil,
-  X,
-  ShieldCheck,
-  ShieldX,
-  Shield
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Search, ChevronLeft, ChevronRight, UserPlus, User, Pencil, X, ShieldCheck, ShieldX } from "lucide-react";
+import AccountService from "../../services/accountService";
+import CityService from "../../services/cityService";
+import RoleService from "../../services/roleService";
 
 const UserManagement = () => {
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john.doe@example.com",
-      role: "Admin",
-      status: "active",
-      phone: "+1 234-567-8901",
-      joinDate: "2024-01-15",
-      department: "IT"
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      role: "User",
-      status: "inactive",
-      phone: "+1 234-567-8902",
-      joinDate: "2024-02-01",
-      department: "HR"
-    },
-  ]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [totalPages, setTotalPages] = useState(0);
+  const [pageNumber, setPageNumber] = useState(0);
+  const [size, setSize] = useState(10);
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("all");
   const [selectedUser, setSelectedUser] = useState(null);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [isEditUserOpen, setIsEditUserOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [newUser, setNewUser] = useState({
-    name: '',
-    email: '',
-    role: 'User',
-    phone: '',
-    department: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    password: "",
+    roleId: "",
+    cityId: "",
+    bloodType: "A_PLUS",
+    is_suspended: false
   });
 
-  const handleStatusChange = (id, newStatus) => {
-    setUsers(
-      users.map((user) =>
-        user.id === id ? { ...user, status: newStatus } : user
-      )
-    );
-  };
-
-  const handleAddUser = (e) => {
-    e.preventDefault();
-    const newUserId = Math.max(...users.map(u => u.id)) + 1;
-    const userToAdd = {
-      ...newUser,
-      id: newUserId,
-      status: 'active',
-      joinDate: new Date().toISOString().split('T')[0]
-    };
-    setUsers([...users, userToAdd]);
+  const handleNewUserChange = (e) => {
+    const { name, value, type, checked } = e.target;
     setNewUser({
-      name: '',
-      email: '',
-      role: 'User',
-      phone: '',
-      department: '',
+      ...newUser,
+      [name]: type === "checkbox" ? checked : value
     });
-    setIsAddUserOpen(false);
   };
 
-  const handleEditClick = (user) => {
-    setEditingUser({ ...user });
-    setIsEditUserOpen(true);
-  };
-
-  const handleUpdateUser = (e) => {
+  const handleAddUser = async (e) => {
     e.preventDefault();
-    setUsers(users.map(user => 
-      user.id === editingUser.id ? editingUser : user
-    ));
-    setIsEditUserOpen(false);
-    setEditingUser(null);
+    try {
+      const response = await AccountService.create(newUser);
+
+      setUsers([...users, response.data]);
+      setIsAddUserOpen(false);
+
+      setNewUser({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        password: "",
+        roleId: "",
+        cityId: "",
+        bloodType: "A_PLUS",
+        is_suspended: false
+      });
+
+      fetchUsers();
+    } catch (error) {
+      console.error("Error creating user:", error);
+    }
   };
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = 
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filter === 'all' || user.status === filter;
+  const truncateText = (text, maxLength) => {
+    if (!text) return "Unknown";
+    return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+  };
+
+  const [cities, setCities] = useState([]);
+  const [roles, setRoles] = useState([]);
+
+  const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+  const bloodTypeMap = {
+    "A+": "A_PLUS",
+    "A-": "A_MOINS",
+    "B+": "B_PLUS",
+    "B-": "B_MOINS",
+    "AB+": "AB_PLUS",
+    "AB-": "AB_MOINS",
+    "O+": "O_PLUS",
+    "O-": "O_MOINS",
+  };
+
+  const reverseBloodTypeMap = Object.entries(bloodTypeMap).reduce((acc, [key, value]) => {
+    acc[value] = key;
+    return acc;
+  }, {});
+
+  useEffect(() => {
+    fetchUsers();
+    fetchCities();
+    fetchRoles();
+  }, [pageNumber, size]);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await AccountService.get(pageNumber, size);
+      setUsers(response.data.content);
+      setTotalPages(response.data.totalPages);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCities = async () => {
+    try {
+      const response = await CityService.getCities(0, 20);
+      setCities(response.data.content || response.data);
+    } catch (error) {
+      console.error("Failed to fetch cities:", error);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const response = await RoleService.getRoles(0, 20);
+      setRoles(response.data.content || response.data);
+    } catch (error) {
+      console.error("Failed to fetch roles:", error);
+    }
+  };
+
+  const fetchUserById = async (userId) => {
+    try {
+      const response = await AccountService.getById(userId);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      return null;
+    }
+  };
+
+  const handleEditClick = async (userId) => {
+    try {
+      const userData = await fetchUserById(userId);
+      if (userData) {
+        setEditingUser({
+          ...userData,
+          roleId: userData.role?.id || "",
+          cityId: userData.city?.id || "",
+          is_suspended: userData.is_suspended || false
+        });
+        setIsEditUserOpen(true);
+      }
+    } catch (error) {
+      console.error("Error setting up user edit:", error);
+    }
+  };
+
+  const handleEditUserChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setEditingUser({
+      ...editingUser,
+      [name]: type === "checkbox" ? checked : value
+    });
+  };
+
+  const handleUpdateUser = async (e) => {
+    e.preventDefault();
+
+    try {
+      const updateData = {
+        ...editingUser,
+        roleId: editingUser.roleId || (editingUser.role?.id || ""),
+        cityId: editingUser.cityId || (editingUser.city?.id || "")
+      };
+
+      await AccountService.update(updateData, editingUser.id);
+
+      setIsEditUserOpen(false);
+      setEditingUser(null);
+      fetchUsers();
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
+  };
+
+  const handleToggleSuspension = async (userId) => {
+    try {
+      await AccountService.toggleUserSuspension(userId);
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, is_suspended: !user.is_suspended } : user
+        )
+      );
+
+    } catch (error) {
+      console.error("Error toggling user suspension:", error);
+    }
+  };
+
+  const filteredUsers = users.filter((user) => {
+    const userName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}`.toLowerCase() : "";
+    const userEmail = user.email ? user.email.toLowerCase() : "";
+    const matchesSearch =
+      searchTerm === "" || userName.includes(searchTerm.toLowerCase()) || userEmail.includes(searchTerm.toLowerCase());
+
+    const matchesFilter =
+      filter === "all" || (filter === "suspended" && user.is_suspended) || (filter === "active" && !user.is_suspended);
+
     return matchesSearch && matchesFilter;
   });
 
-  const StatusButton = ({
-    user,
-    status,
-    icon: Icon,
-    colorClass,
-    hoverClass,
-    activeClass,
-  }) => (
-    <button
-      onClick={() => handleStatusChange(user.id, status)}
-      className={`p-2 rounded-lg transition-colors relative ${
-        user.status === status ? activeClass : colorClass
-      } ${user.status !== status ? hoverClass : ""}`}
-      title={status.charAt(0).toUpperCase() + status.slice(1)}
-    >
-      <Icon className="h-5 w-5" />
-      {user.status === status && (
-        <span className="absolute -top-1 -right-1 h-2 w-2 bg-neutral-800 rounded-full" />
-      )}
-    </button>
-  );
+
+  const getCityNameById = (cityId) => {
+    const city = cities.find((city) => city.id === cityId);
+    return city ? city.cityName || city.name : "Unknown";
+  };
+
+
+  const getRoleNameById = (roleId) => {
+    const role = roles.find((role) => role.id === roleId);
+    return role ? role.name : "Unknown";
+  };
+
+  const handleViewDetails = async (userId) => {
+    try {
+      const userData = await fetchUserById(userId);
+      if (userData) {
+        setSelectedUser(userData);
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    try {
+      await AccountService.delete(userId);
+      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+      setSelectedUser(null);
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    }
+  };
+
+  const StatusButton = ({ user, icon: Icon, colorClass, hoverClass, activeClass, isSuspended, onToggleSuspension }) => {
+    const isActive = isSuspended ? user.is_suspended : !user.is_suspended;
+
+    return (
+      <button
+        className={`p-2 rounded-lg transition-colors relative ${isActive ? activeClass : colorClass} ${!isActive ? hoverClass : ""}`}
+        title={isSuspended ? "Suspended" : "Active"}
+        onClick={() => onToggleSuspension(user.id)}
+      >
+        <Icon className="h-5 w-5" />
+        {isActive && <span className="absolute -top-1 -right-1 h-2 w-2 bg-neutral-800 rounded-full" />}
+      </button>
+    );
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-neutral-100">
@@ -145,7 +277,6 @@ const UserManagement = () => {
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
               <option value="suspended">Suspended</option>
             </select>
             <button
@@ -165,97 +296,145 @@ const UserManagement = () => {
             <tr>
               <th className="px-6 py-3 text-left text-sm font-semibold font-cairo text-neutral-600">Name</th>
               <th className="px-6 py-3 text-left text-sm font-semibold font-cairo text-neutral-600">Email</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold font-cairo text-neutral-600">Phone</th>
               <th className="px-6 py-3 text-left text-sm font-semibold font-cairo text-neutral-600">Role</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold font-cairo text-neutral-600">Department</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold font-cairo text-neutral-600">Join Date</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold font-cairo text-neutral-600">City</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold font-cairo text-neutral-600">Blood Type</th>
               <th className="px-6 py-3 text-left text-sm font-semibold font-cairo text-neutral-600">Status</th>
               <th className="px-6 py-3 text-left text-sm font-semibold font-cairo text-neutral-600">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-100">
-            {filteredUsers.map(user => (
-              <tr key={user.id} className="hover:bg-neutral-50">
-                <td className="px-6 py-4">
-                  <div className="font-cairo font-medium text-neutral-800">{user.name}</div>
-                  <div className="text-sm text-neutral-500">{user.phone}</div>
-                </td>
-                <td className="px-6 py-4 font-cairo text-neutral-600">{user.email}</td>
-                <td className="px-6 py-4 font-cairo text-neutral-600">{user.role}</td>
-                <td className="px-6 py-4 font-cairo text-neutral-600">{user.department}</td>
-                <td className="px-6 py-4 font-cairo text-neutral-600">{user.joinDate}</td>
-                <td className="px-6 py-4">
-                  <span className={`px-3 py-1 rounded-full text-sm font-cairo ${
-                    user.status === 'active' ? 'bg-green-100 text-green-800' :
-                    user.status === 'suspended' ? 'bg-red-100 text-red-800' :
-                    'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex space-x-2">
-                    <StatusButton
-                      user={user}
-                      status="active"
-                      icon={ShieldCheck}
-                      colorClass="text-green-600"
-                      hoverClass="hover:bg-green-50"
-                      activeClass="bg-green-100 text-green-800"
-                    />
-                    <StatusButton
-                      user={user}
-                      status="suspended"
-                      icon={ShieldX}
-                      colorClass="text-red-600"
-                      hoverClass="hover:bg-red-50"
-                      activeClass="bg-red-100 text-red-800"
-                    />
-                    <button
-                      onClick={() => handleEditClick(user)}
-                      className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                      title="Edit User"
-                    >
-                      <Pencil className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => setSelectedUser(user)}
-                      className="p-2 text-secondary-500 hover:bg-secondary-50 rounded-lg transition-colors"
-                      title="View Details"
-                    >
-                      <User className="h-5 w-5" />
-                    </button>
-                  </div>
+            {loading ? (
+              <tr>
+                <td colSpan="8" className="px-6 py-4 text-center">
+                  Loading...
                 </td>
               </tr>
-            ))}
+            ) : filteredUsers.length === 0 ? (
+              <tr>
+                <td colSpan="8" className="px-6 py-4 text-center">
+                  No users found
+                </td>
+              </tr>
+            ) : (
+              filteredUsers.map((user) => (
+                <tr key={user.id} className="hover:bg-neutral-50">
+                  <td className="px-6 py-4">
+                    <div className="font-cairo font-medium text-neutral-800">
+                      {user.firstName} {user.lastName}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 font-cairo text-neutral-600">{truncateText(user.email, 14)}</td>
+                  <td className="px-6 py-4 font-cairo text-neutral-600">{user.phone}</td>
+                  <td className="px-6 py-4 font-cairo text-neutral-600">
+                    {user.roleId
+                      ? getRoleNameById(user.roleId).replace(/^ROLE_/, "")
+                      : typeof user.role === "object"
+                        ? (user.role.name || "").replace(/^ROLE_/, "")
+                        : typeof user.role === "string"
+                          ? user.role.replace(/^ROLE_/, "")
+                          : user.role || "Unknown"}
+                  </td>
+                  <td className="px-6 py-4 font-cairo text-neutral-600">
+                    {user.cityId
+                      ? truncateText(getCityNameById(user.cityId), 14)
+                      : user.city
+                        ? typeof user.city === "object"
+                          ? truncateText(user.city.cityName || "Unknown", 14)
+                          : truncateText(user.city, 14)
+                        : "Unknown"}
+                  </td>
+                  <td className="px-6 py-4 font-cairo text-neutral-600">
+                    {user.bloodType ? reverseBloodTypeMap[user.bloodType] || String(user.bloodType) : ""}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-cairo ${user.is_suspended ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                        }`}
+                    >
+                      {user.is_suspended ? "Suspended" : "Active"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex space-x-2">
+                      <StatusButton
+                        key={`active-btn-${user.id}`}
+                        user={user}
+                        icon={ShieldCheck}
+                        colorClass="text-green-600"
+                        hoverClass="hover:bg-green-50"
+                        activeClass="bg-green-100 text-green-800"
+                        isSuspended={false}
+                        onToggleSuspension={handleToggleSuspension}
+                      />
+                      <StatusButton
+                        key={`suspended-btn-${user.id}`}
+                        user={user}
+                        icon={ShieldX}
+                        colorClass="text-red-600"
+                        hoverClass="hover:bg-red-50"
+                        activeClass="bg-red-100 text-red-800"
+                        isSuspended={true}
+                        onToggleSuspension={handleToggleSuspension}
+                      />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditClick(user.id);
+                        }}
+                        className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Edit User"
+                      >
+                        <Pencil className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewDetails(user.id);
+                        }}
+                        className="p-2 text-secondary-500 hover:bg-secondary-50 rounded-lg transition-colors"
+                        title="View Details"
+                      >
+                        <User className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
-      <div className="px-6 py-4 border-t border-neutral-100">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-neutral-600 font-cairo">
-            Showing <span className="font-medium">{filteredUsers.length}</span> users
-          </p>
-          <div className="flex space-x-2">
-            <button className="p-2 text-neutral-600 hover:bg-neutral-50 rounded-lg">
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button className="p-2 text-neutral-600 hover:bg-neutral-50 rounded-lg">
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
+      <div className="flex justify-between items-center p-4 border-t border-neutral-100">
+        <div className="text-sm text-neutral-600">
+          Page {pageNumber + 1} of {totalPages || 1}
+        </div>
+        <div className="flex space-x-2">
+          <button
+            className="p-2 text-neutral-600 hover:bg-neutral-50 rounded-lg"
+            onClick={() => setPageNumber(Math.max(0, pageNumber - 1))}
+            disabled={pageNumber === 0}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            className="p-2 text-neutral-600 hover:bg-neutral-50 rounded-lg"
+            onClick={() => setPageNumber(Math.min((totalPages || 1) - 1, pageNumber + 1))}
+            disabled={pageNumber >= (totalPages || 1) - 1}
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
         </div>
       </div>
 
       {isEditUserOpen && editingUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full mx-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
-                <h2 className="text-xl font-bold font-cairo text-neutral-800">
-                  Edit User
-                </h2>
+                <h2 className="text-xl font-bold font-cairo text-neutral-800">Edit User</h2>
                 <button
                   onClick={() => {
                     setIsEditUserOpen(false);
@@ -269,83 +448,118 @@ const UserManagement = () => {
               <form onSubmit={handleUpdateUser} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Name
-                    </label>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">First Name</label>
                     <input
                       type="text"
+                      name="firstName"
                       required
                       className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
-                      value={editingUser.name}
-                      onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                      value={editingUser.firstName || ""}
+                      onChange={handleEditUserChange}
+                      placeholder="Enter first name"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Email
-                    </label>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Last Name</label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      required
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      value={editingUser.lastName || ""}
+                      onChange={handleEditUserChange}
+                      placeholder="Enter last name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Email</label>
                     <input
                       type="email"
+                      name="email"
                       required
                       className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
-                      value={editingUser.email}
-                      onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                      value={editingUser.email || ""}
+                      onChange={handleEditUserChange}
+                      placeholder="Enter email address"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Phone
-                    </label>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Phone</label>
                     <input
                       type="tel"
+                      name="phone"
                       required
                       className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
-                      value={editingUser.phone}
-                      onChange={(e) => setEditingUser({ ...editingUser, phone: e.target.value })}
+                      value={editingUser.phone || ""}
+                      onChange={handleEditUserChange}
+                      placeholder="Enter phone number"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Department
-                    </label>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Role</label>
+                    <select
+                      name="roleId"
+                      required
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      value={editingUser.roleId || (editingUser.role?.id || "")}
+                      onChange={handleEditUserChange}
+                    >
+                      <option value="">Select a role</option>
+                      {roles.length > 0 ? (
+                        roles.map((role) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name.replace(/^ROLE_/, "")}
+                          </option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="User">User</option>
+                          <option value="Admin">Admin</option>
+                          <option value="Manager">Manager</option>
+                          <option value="Editor">Editor</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">City</label>
+                    <select
+                      name="cityId"
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      value={editingUser.cityId || (editingUser.city?.id || "")}
+                      onChange={handleEditUserChange}
+                    >
+                      <option value="">Select a city</option>
+                      {cities.map((city) => (
+                        <option key={city.id} value={city.id}>
+                          {city.cityName || city.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Blood Type</label>
+                    <select
+                      name="bloodType"
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      value={editingUser.bloodType || "A_PLUS"}
+                      onChange={handleEditUserChange}
+                    >
+                      {bloodTypes.map((type) => (
+                        <option key={type} value={bloodTypeMap[type]}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Suspended</label>
                     <input
-                      type="text"
-                      required
-                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
-                      value={editingUser.department}
-                      onChange={(e) => setEditingUser({ ...editingUser, department: e.target.value })}
+                      type="checkbox"
+                      name="is_suspended"
+                      checked={!!editingUser.is_suspended}
+                      onChange={handleEditUserChange}
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Role
-                    </label>
-                    <select
-                      required
-                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
-                      value={editingUser.role}
-                      onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
-                    >
-                      <option value="User">User</option>
-                      <option value="Admin">Admin</option>
-                      <option value="Manager">Manager</option>
-                      <option value="Editor">Editor</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Status
-                    </label>
-                    <select
-                      required
-                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
-                      value={editingUser.status}
-                      onChange={(e) => setEditingUser({ ...editingUser, status: e.target.value })}
-                    >
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                      <option value="suspended">Suspended</option>
-                    </select>
                   </div>
                 </div>
                 <div className="flex justify-end space-x-2 pt-4">
@@ -359,11 +573,160 @@ const UserManagement = () => {
                   >
                     Cancel
                   </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
-                  >
+                  <button type="submit" className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600">
                     Update User
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isAddUserOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-xl font-bold font-cairo text-neutral-800">Add New User</h2>
+                <button onClick={() => setIsAddUserOpen(false)} className="p-2 hover:bg-neutral-100 rounded-lg">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <form onSubmit={handleAddUser} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">First Name</label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      required
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      placeholder="Enter first name"
+                      value={newUser.firstName}
+                      onChange={handleNewUserChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Last Name</label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      required
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      placeholder="Enter last name"
+                      value={newUser.lastName}
+                      onChange={handleNewUserChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      required
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      placeholder="Enter email address"
+                      value={newUser.email}
+                      onChange={handleNewUserChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Password</label>
+                    <input
+                      type="password"
+                      name="password"
+                      required
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      placeholder="Enter the password"
+                      value={newUser.password}
+                      onChange={handleNewUserChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Phone</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      required
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      placeholder="Enter phone number"
+                      value={newUser.phone}
+                      onChange={handleNewUserChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Role</label>
+                    <select
+                      name="roleId"
+                      required
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      value={newUser.roleId}
+                      onChange={handleNewUserChange}
+                    >
+                      <option value="">Select a role</option>
+                      {roles.length > 0 ? (
+                        roles.map((role) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name.replace(/^ROLE_/, "")}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="">No roles available</option>
+                      )}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">City</label>
+                    <select
+                      name="cityId"
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      value={newUser.cityId}
+                      onChange={handleNewUserChange}
+                    >
+                      <option value="">Select a city</option>
+                      {cities.map((city) => (
+                        <option key={city.id} value={city.id}>
+                          {city.cityName || city.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Blood Type</label>
+                    <select
+                      name="bloodType"
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      value={newUser.bloodType}
+                      onChange={handleNewUserChange}
+                    >
+                      {bloodTypes.map((type) => (
+                        <option key={type} value={bloodTypeMap[type]}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Suspended</label>
+                    <input
+                      type="checkbox"
+                      name="is_suspended"
+                      checked={newUser.is_suspended}
+                      onChange={handleNewUserChange}
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-2 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddUserOpen(false)}
+                    className="px-4 py-2 border border-neutral-200 rounded-lg hover:bg-neutral-50"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600">
+                    Add User
                   </button>
                 </div>
               </form>
@@ -377,99 +740,133 @@ const UserManagement = () => {
           <div className="bg-white rounded-lg max-w-2xl w-full mx-4">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
-                <h2 className="text-xl font-bold font-cairo text-neutral-800">
-                  Add New User
-                </h2>
-                <button
-                  onClick={() => setIsAddUserOpen(false)}
-                  className="p-2 hover:bg-neutral-100 rounded-lg"
-                >
+                <h2 className="text-xl font-bold font-cairo text-neutral-800">Add New User</h2>
+                <button onClick={() => setIsAddUserOpen(false)} className="p-2 hover:bg-neutral-100 rounded-lg">
                   <X className="h-5 w-5" />
                 </button>
               </div>
               <form onSubmit={handleAddUser} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      First Name
-                    </label>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">First Name</label>
                     <input
                       type="text"
+                      name="firstName"
                       required
                       className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
-                      value={newUser.name}
-                      onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                      placeholder="Enter full name"
+                      placeholder="Enter first name"
+                      value={newUser.firstName}
+                      onChange={handleNewUserChange}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Last Name
-                    </label>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Last Name</label>
                     <input
                       type="text"
+                      name="lastName"
                       required
                       className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
-                      value={newUser.name}
-                      onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                      placeholder="Enter full name"
+                      placeholder="Enter last name"
+                      value={newUser.lastName}
+                      onChange={handleNewUserChange}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Email
-                    </label>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Email</label>
                     <input
                       type="email"
+                      name="email"
                       required
                       className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
-                      value={newUser.email}
-                      onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                       placeholder="Enter email address"
+                      value={newUser.email}
+                      onChange={handleNewUserChange}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Password
-                    </label>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Password</label>
                     <input
                       type="password"
+                      name="password"
                       required
                       className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
-                      value={newUser.email}
-                      onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                      placeholder="Enter email address"
+                      placeholder="Enter the password"
+                      value={newUser.password}
+                      onChange={handleNewUserChange}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Phone
-                    </label>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Phone</label>
                     <input
                       type="tel"
+                      name="phone"
                       required
                       className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
-                      value={newUser.phone}
-                      onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
                       placeholder="Enter phone number"
+                      value={newUser.phone}
+                      onChange={handleNewUserChange}
                     />
                   </div>
-              
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Role
-                    </label>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Role</label>
                     <select
+                      name="roleId"
                       required
                       className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
-                      value={newUser.role}
-                      onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                      value={newUser.roleId}
+                      onChange={handleNewUserChange}
                     >
-                      <option value="User">User</option>
-                      <option value="Admin">Admin</option>
-                      <option value="Manager">Manager</option>
-                      <option value="Editor">Editor</option>
+                      <option value="">Select a role</option>
+                      {roles.length > 0 ? (
+                        roles.map((role) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name.replace(/^ROLE_/, "")}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="">No roles available</option>
+                      )}
                     </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">City</label>
+                    <select
+                      name="cityId"
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      value={newUser.cityId}
+                      onChange={handleNewUserChange}
+                    >
+                      <option value="">Select a city</option>
+                      {cities.map((city) => (
+                        <option key={city.id} value={city.id}>
+                          {city.cityName || city.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Blood Type</label>
+                    <select
+                      name="bloodType"
+                      className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      value={newUser.bloodType}
+                      onChange={handleNewUserChange}
+                    >
+                      {bloodTypes.map((type) => (
+                        <option key={type} value={bloodTypeMap[type]}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Suspended</label>
+                    <input
+                      type="checkbox"
+                      name="is_suspended"
+                      checked={newUser.is_suspended}
+                      onChange={handleNewUserChange}
+                    />
                   </div>
                 </div>
                 <div className="flex justify-end space-x-2 pt-4">
@@ -480,10 +877,7 @@ const UserManagement = () => {
                   >
                     Cancel
                   </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
-                  >
+                  <button type="submit" className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600">
                     Add User
                   </button>
                 </div>
@@ -498,83 +892,74 @@ const UserManagement = () => {
           <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
-                <h2 className="text-xl font-bold font-cairo text-neutral-800">
-                  User Details
-                </h2>
-                <button
-                  onClick={() => setSelectedUser(null)}
-                  className="p-2 hover:bg-neutral-100 rounded-lg"
-                >
+                <h2 className="text-xl font-bold font-cairo text-neutral-800">User Details</h2>
+                <button onClick={() => setSelectedUser(null)} className="p-2 hover:bg-neutral-100 rounded-lg">
                   <X className="h-5 w-5" />
                 </button>
               </div>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-semibold text-neutral-600">
-                      Name
+                    <p className="text-sm font-semibold text-neutral-600">Name</p>
+                    <p className="text-neutral-800">
+                      {selectedUser.firstName} {selectedUser.lastName}
                     </p>
-                    <p className="text-neutral-800">{selectedUser.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-neutral-600">
-                      Email
-                    </p>
+                    <p className="text-sm font-semibold text-neutral-600">Email</p>
                     <p className="text-neutral-800">{selectedUser.email}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-neutral-600">
-                      Phone
-                    </p>
+                    <p className="text-sm font-semibold text-neutral-600">Phone</p>
                     <p className="text-neutral-800">{selectedUser.phone}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-neutral-600">
-                      Role
+                    <p className="text-sm font-semibold text-neutral-600">Role</p>
+                    <p className="text-neutral-800">
+                      {typeof selectedUser.role === "object"
+                        ? selectedUser.role.name.replace(/^ROLE_/, "")
+                        : typeof selectedUser.role === "string"
+                          ? selectedUser.role.replace(/^ROLE_/, "")
+                          : "Unknown"}
                     </p>
-                    <p className="text-neutral-800">{selectedUser.role}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-neutral-600">
-                      Department
+                    <p className="text-sm font-semibold text-neutral-600">City</p>
+                    <p className="text-neutral-800">
+                      {selectedUser.city
+                        ? typeof selectedUser.city === "object"
+                          ? selectedUser.city.cityName || selectedUser.city.name
+                          : selectedUser.city
+                        : "Unknown"}
                     </p>
-                    <p className="text-neutral-800">{selectedUser.department}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-neutral-600">
-                      Join Date
-                    </p>
-                    <p className="text-neutral-800">{selectedUser.joinDate}</p>
+                    <p className="text-sm font-semibold text-neutral-600">Status</p>
+                    <p className="text-neutral-800">{selectedUser.is_suspended ? "Suspended" : "Active"}</p>
                   </div>
+                  <div>
+                    <p className="text-sm font-semibold text-neutral-600">Blood Type</p>
+                    <p className="text-neutral-800">
+                      {selectedUser.bloodType
+                        ? reverseBloodTypeMap[selectedUser.bloodType] || selectedUser.bloodType
+                        : "Unknown"}
+                    </p>
+                  </div>
+                  {selectedUser.joinDate && (
+                    <div>
+                      <p className="text-sm font-semibold text-neutral-600">Join Date</p>
+                      <p className="text-neutral-800">{selectedUser.joinDate}</p>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex justify-between mt-6">
-                <div className="flex space-x-2">
-                  <StatusButton
-                    user={selectedUser}
-                    status="active"
-                    icon={ShieldCheck}
-                    colorClass="text-green-600"
-                    hoverClass="hover:bg-green-50"
-                    activeClass="bg-green-100 text-green-800"
-                  />
-                  <StatusButton
-                    user={selectedUser}
-                    status="suspended"
-                    icon={ShieldX}
-                    colorClass="text-red-600"
-                    hoverClass="hover:bg-red-50"
-                    activeClass="bg-red-100 text-red-800"
-                  />
-                  <StatusButton
-                    user={selectedUser}
-                    status="inactive"
-                    icon={Shield}
-                    colorClass="text-yellow-600"
-                    hoverClass="hover:bg-yellow-50"
-                    activeClass="bg-yellow-100 text-yellow-800"
-                  />
-                </div>
+                <button
+                  onClick={() => handleDeleteUser(selectedUser.id)}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  Delete User Account
+                </button>
                 <button
                   onClick={() => setSelectedUser(null)}
                   className="px-4 py-2 border border-neutral-200 rounded-lg hover:bg-neutral-50"
@@ -587,7 +972,8 @@ const UserManagement = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default UserManagement;
+export default UserManagement
+

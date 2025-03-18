@@ -12,7 +12,7 @@ import RoleService from "../../services/roleService";
 
 const RoleManagement = () => {
   const [roles, setRoles] = useState([]);
-  const [filteredRoles, setFilteredRoles] = useState([]); // Add filteredRoles state
+  const [filteredRoles, setFilteredRoles] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddRoleOpen, setIsAddRoleOpen] = useState(false);
   const [isEditRoleOpen, setIsEditRoleOpen] = useState(false);
@@ -31,7 +31,7 @@ const RoleManagement = () => {
     try {
       const response = await RoleService.getRoles(currentPage, rowsPerPage);
       setRoles(response.data.content || response.data);
-      setFilteredRoles(response.data.content || response.data); // Initialize filteredRoles
+      setFilteredRoles(response.data.content || response.data);
       setTotalPages(
         response.data.totalPages || Math.ceil(response.data.length / rowsPerPage)
       );
