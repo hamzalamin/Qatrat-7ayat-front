@@ -31,6 +31,8 @@ import Error401 from "./components/layout/Exceptions/Error401";
 import Error403 from "./components/layout/Exceptions/Error403";
 import Error404 from "./components/layout/Exceptions/Error404";
 import RoleManagement from "./pages/Admin/RoleManagement";
+import GlobalError from "./components/layout/Exceptions/GlobalErrorHandler";
+import { ErrorProvider } from "./context/ErrorContext";
 
 function Layout({ children }) {
   const location = useLocation();
@@ -39,6 +41,7 @@ function Layout({ children }) {
   return (
     <>
       {!isAdminRoute && <Navbar />}
+      <GlobalError />
       {children}
       {!isAdminRoute && <Footer />}
     </>
@@ -59,60 +62,62 @@ const NotFound = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Layout>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <>
-                  <HeroSection />
-                  <BloodRequestsSection />
-                  <BloodRequestsSection />
-                  <BloodType />
-                  <LatestArticles />
-                  <DonationProcessSection />
-                </>
-              }
-            />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegistrationForm />} />
-            <Route path="/all-blood-requests" element={<AllBloodRequests />} />
-            <Route path="/all-blood-donors" element={<AllBloodDonors />} />
-            <Route path="/all-articles" element={<AllArticles />} />
-            <Route path="/articles/:id" element={<ArticleDetail />} />
-            
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <UserProfile />
-                </ProtectedRoute>
-              }
-            />
+    <ErrorProvider>
+      <AuthProvider>
+        <Router>
+          <Layout>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <>
+                    <HeroSection />
+                    <BloodRequestsSection />
+                    <BloodRequestsSection />
+                    <BloodType />
+                    <LatestArticles />
+                    <DonationProcessSection />
+                  </>
+                }
+              />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegistrationForm />} />
+              <Route path="/all-blood-requests" element={<AllBloodRequests />} />
+              <Route path="/all-blood-donors" element={<AllBloodDonors />} />
+              <Route path="/all-articles" element={<AllArticles />} />
+              <Route path="/articles/:id" element={<ArticleDetail />} />
 
-            <Route
-              path="/admin/dashboard"
-              element={
-                <ProtectedRoute requiredRole="ROLE_ADMIN">
-                  <AdminLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<AdminStatistics />} />
-              <Route path="article-management" element={<ArticleManagement />} />
-              <Route path="user-management" element={<UserManagement />} />
-              <Route path="tag-management" element={<TagManagement />} />
-              <Route path="role-management" element={<RoleManagement />} />
-            </Route>
-            <Route path="/unauthorized" element={<Unauthorized />} />
-            <Route path="/forbidden" element={<Forbidden />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
-      </Router>
-    </AuthProvider>
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <UserProfile />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <ProtectedRoute requiredRole="ROLE_ADMIN">
+                    <AdminLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<AdminStatistics />} />
+                <Route path="article-management" element={<ArticleManagement />} />
+                <Route path="user-management" element={<UserManagement />} />
+                <Route path="tag-management" element={<TagManagement />} />
+                <Route path="role-management" element={<RoleManagement />} />
+              </Route>
+              <Route path="/unauthorized" element={<Unauthorized />} />
+              <Route path="/forbidden" element={<Forbidden />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Layout>
+        </Router>
+      </AuthProvider>
+    </ErrorProvider>
   );
 }
 

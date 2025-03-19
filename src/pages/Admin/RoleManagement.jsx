@@ -21,6 +21,7 @@ const RoleManagement = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalRoles, setTotalRoles] = useState(0);
+  const [errorMessage, setErrorMessage] = useState(null);
   const rowsPerPage = 5;
 
   useEffect(() => {
@@ -41,7 +42,6 @@ const RoleManagement = () => {
     }
   };
 
-  // Handle search functionality
   useEffect(() => {
     if (searchTerm) {
       const filtered = roles.filter((role) =>
@@ -49,7 +49,7 @@ const RoleManagement = () => {
       );
       setFilteredRoles(filtered);
     } else {
-      setFilteredRoles(roles); // Reset to all roles if searchTerm is empty
+      setFilteredRoles(roles);
     }
   }, [searchTerm, roles]);
 
@@ -71,8 +71,14 @@ const RoleManagement = () => {
       fetchRoles();
     } catch (error) {
       console.error("Failed to delete role:", error);
+      if (error.response && error.response.data) {
+        setErrorMessage(error.response.data.message || "Failed to delete the role.");
+      } else {
+        setErrorMessage("An unexpected error occurred.");
+      }
     }
   };
+  
 
   const handleEditRole = (role) => {
     setEditingRole(role);
@@ -105,12 +111,18 @@ const RoleManagement = () => {
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(0); // Reset to first page when searching
+    setCurrentPage(0); 
   };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-neutral-100">
       {/* Header and Search */}
+      {errorMessage && (
+        <div className="bg-red-100 text-red-800 p-4 mb-4 rounded-md">
+          <strong>Error:</strong> {errorMessage}
+        </div>
+      )}
+
       <div className="p-6 border-b border-neutral-100">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h1 className="text-2xl font-bold font-cairo text-neutral-800">
@@ -203,11 +215,10 @@ const RoleManagement = () => {
           </p>
           <div className="flex space-x-2">
             <button
-              className={`p-2 text-neutral-600 rounded-lg ${
-                currentPage > 0
+              className={`p-2 text-neutral-600 rounded-lg ${currentPage > 0
                   ? "hover:bg-neutral-50"
                   : "opacity-50 cursor-not-allowed"
-              }`}
+                }`}
               onClick={handlePreviousPage}
               disabled={currentPage === 0}
             >
@@ -219,11 +230,10 @@ const RoleManagement = () => {
               </span>
             </div>
             <button
-              className={`p-2 text-neutral-600 rounded-lg ${
-                currentPage < totalPages - 1
+              className={`p-2 text-neutral-600 rounded-lg ${currentPage < totalPages - 1
                   ? "hover:bg-neutral-50"
                   : "opacity-50 cursor-not-allowed"
-              }`}
+                }`}
               onClick={handleNextPage}
               disabled={currentPage >= totalPages - 1}
             >

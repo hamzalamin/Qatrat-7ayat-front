@@ -1,6 +1,6 @@
-import { axiosClient } from '../config/axios';
+import { axiosClient } from "../config/axios";
 
-const API_URL = 'v1/articles'; 
+const API_URL = "v1/articles";
 
 class ArticleService {
   get(pageNumber, size) {
@@ -10,8 +10,22 @@ class ArticleService {
   getArticleById(id) {
     return axiosClient.get(`${API_URL}/${id}`);
   }
-  
 
+  create(requestData) {
+    return axiosClient.post(`${API_URL}`, requestData);
+  }
+
+  update(requestData, id) {
+    return axiosClient.put(`${API_URL}/${id}`, requestData);
+  }
+
+  updateStatus(id) {
+    return axiosClient.put(`${API_URL}/status/${id}`);
+  }
+
+  delete(id) {
+    return axiosClient.delete(`${API_URL}/${id}`);
+  }
 }
 
 export default new ArticleService();
