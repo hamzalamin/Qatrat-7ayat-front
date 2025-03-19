@@ -17,20 +17,19 @@ const Sidebar = () => {
   const [isExpanded, setIsExpanded] = useState(true);
 
   const menuItems = [
-    { link:"#" ,title: "Dashboard", icon: Home },
-    { link:"dashboard/article-management" ,title: "Articles", icon: FileText },
-    { link:"dashboard/tag-management" ,title: "Tags", icon: Tag },
-    { link:"dashboard/user-management", title: "Users", icon: Users },
-    { link:"dashboard/role-management" ,title: "Roles", icon: ShieldCheck },
-    { link:"#" ,title: "Notifications", icon: Bell },
-    { link:"#" ,title: "Settings", icon: Settings },
+    { link: "/admin/dashboard", title: "Dashboard", icon: Home },
+    { link: "article-management", title: "Articles", icon: FileText }, 
+    { link: "tag-management", title: "Tags", icon: Tag }, 
+    { link: "user-management", title: "Users", icon: Users }, 
+    { link: "role-management", title: "Roles", icon: ShieldCheck }, 
+    { link: "notifications", title: "Notifications", icon: Bell }, 
+    { link: "settings", title: "Settings", icon: Settings }, 
   ];
 
   return (
     <div
-      className={`bg-white min-h-screen border-r border-neutral-100 text-neutral-800 transition-all duration-300 ${
-        isExpanded ? "w-64" : "w-20"
-      }`}
+      className={`bg-white min-h-screen border-r border-neutral-100 text-neutral-800 transition-all duration-300 ${isExpanded ? "w-64" : "w-20"
+        }`}
     >
       <div className="flex items-center justify-between p-4 border-b border-neutral-100">
         {isExpanded && (
@@ -62,9 +61,8 @@ const Sidebar = () => {
           <a
             key={item.title}
             href={item.link}
-            className={`flex items-center space-x-2 p-3 rounded-lg hover:bg-primary-50 text-neutral-600 hover:text-primary-500 transition-colors ${
-              !isExpanded && "justify-center"
-            }`}
+            className={`flex items-center space-x-2 p-3 rounded-lg hover:bg-primary-50 text-neutral-600 hover:text-primary-500 transition-colors ${!isExpanded && "justify-center"
+              }`}
           >
             <item.icon className="h-5 w-5" />
             {isExpanded && <span className="font-cairo">{item.title}</span>}

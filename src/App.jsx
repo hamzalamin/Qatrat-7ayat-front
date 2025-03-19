@@ -97,14 +97,14 @@ function App() {
               />
 
               <Route
-                path="/admin/dashboard"
+                path="/admin"
                 element={
                   <ProtectedRoute requiredRole="ROLE_ADMIN">
                     <AdminLayout />
                   </ProtectedRoute>
                 }
               >
-                <Route index element={<AdminStatistics />} />
+                <Route path="dashboard" element={<AdminStatistics />} />
                 <Route path="article-management" element={<ArticleManagement />} />
                 <Route path="user-management" element={<UserManagement />} />
                 <Route path="tag-management" element={<TagManagement />} />
