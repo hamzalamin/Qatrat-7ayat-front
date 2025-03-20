@@ -30,6 +30,14 @@ class ArticleService {
   delete(id) {
     return axiosClient.delete(`${API_URL}/articles/${id}`);
   }
+
+  getPublic(pageNumber, size) {
+    return axiosClient.get(`${API_URL}/public/articles?pageNumber=${pageNumber}&size=${size}`);
+  }
+
+  getLatestPublic() {
+    return axiosClient.get(`${API_URL}/public/articles/latest?limit=5`);
+  }
 }
 
 export default new ArticleService();

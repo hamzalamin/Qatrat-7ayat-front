@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Calendar, Search, ArrowLeft } from "lucide-react";
+import { Calendar, Search, ArrowLeft, Heart, Share2, UserCircle } from "lucide-react";
 import ArticleService from "../../services/articleService";
 import CityService from "../../services/cityService";
 import { useNavigate } from "react-router-dom";
 
 const AllArticles = () => {
-  const [allArticles, setAllArticles] = useState([]); 
+  const [allArticles, setAllArticles] = useState([]);
   const [filteredArticles, setFilteredArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
-    city: "", 
+    city: "",
   });
   const [pageNumber, setPageNumber] = useState(0);
   const [size, setSize] = useState(9);
@@ -27,9 +27,9 @@ const AllArticles = () => {
         let hasMorePages = true;
 
         while (hasMorePages) {
-          const response = await ArticleService.get(currentPage, size);
+          const response = await ArticleService.getPublic(currentPage, size);
           allArticles = [...allArticles, ...response.data.content];
-          hasMorePages = !response.data.last; 
+          hasMorePages = !response.data.last;
           currentPage++;
         }
 
@@ -82,7 +82,7 @@ const AllArticles = () => {
     }
 
     setFilteredArticles(result);
-    setTotalPages(Math.ceil(result.length / size)); 
+    setTotalPages(Math.ceil(result.length / size));
     setPageNumber(0);
   }, [searchTerm, filters, allArticles, size]);
 
@@ -205,6 +205,17 @@ const AllArticles = () => {
                 key={article.id}
                 className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"
               >
+                <div className="relative">
+                  <img
+                    src={article.imageUrl || "https://plus.unsplash.com/premium_photo-1723044801280-fe1932fa9841?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NTN8fGJsb29kJTIwZG9uYXRpb258ZW58MHx8MHx8fDA%3D"}
+                    alt={article.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <span className="absolute top-4 right-4 bg-primary-500 text-white px-3 py-1 rounded-full text-sm font-kufi">
+                    {article.category || "عام"}
+                  </span>
+                </div>
+
                 <div className="p-6">
                   <h3 className="font-cairo font-bold text-xl mb-2 text-neutral-800">
                     {article.title}
@@ -215,15 +226,16 @@ const AllArticles = () => {
 
                   <div className="flex justify-between items-center mt-4">
                     <div className="flex items-center text-neutral-500 text-sm font-kufi">
-                      <Calendar className="w-4 h-4 ml-1 mr-2 mb-1" />
+                      <Calendar className="w-4 h-4 ml-1" />
                       {new Date(article.publishedAt).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center text-neutral-500 text-sm">
+                      <Heart className="w-4 h-4 ml-1" />
+                      {article.likes || 0}
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center mt-2">
-                    <span className="text-neutral-500 text-sm font-kufi">
-                      {article.user.psudoName}
-                    </span>
+                  <div className="mt-4 flex justify-between items-center">
                     <button
                       onClick={() => navigate(`/articles/${article.id}`)}
                       className="flex items-center text-primary-500 hover:text-primary-600 transition-colors duration-200 font-kufi"
@@ -231,6 +243,14 @@ const AllArticles = () => {
                       <ArrowLeft className="w-4 h-4 mr-1" />
                       اقرأ المزيد
                     </button>
+                    <div className="flex space-x-2 space-x-reverse">
+                      <button className="p-2 hover:bg-neutral-100 rounded-lg">
+                        <Share2 className="w-5 h-5 text-neutral-600" />
+                      </button>
+                      <button className="p-2 hover:bg-neutral-100 rounded-lg">
+                        <UserCircle className="w-5 h-5 text-neutral-600" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </article>

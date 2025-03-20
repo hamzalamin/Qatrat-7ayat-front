@@ -13,18 +13,16 @@ const LatestArticles = () => {
     const fetchArticles = async () => {
       setLoading(true);
       try {
-        const response = await ArticleService.get(0, 100);
-
-        if (!response.data || !response.data.content) {
-          throw new Error("Invalid API response structure");
-        }
-
-        const sortedArticles = response.data.content.sort(
+        const response = await ArticleService.getLatestPublic();
+        // Check if response.data is an array (direct data) or has content property
+        const articlesData = Array.isArray(response.data) 
+          ? response.data 
+          : (response.data?.content || []);
+        
+        const sortedArticles = articlesData.sort(
           (a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)
         );
-
         const lastThreeArticles = sortedArticles.slice(0, 3);
-
         const formattedArticles = lastThreeArticles.map((article) => ({
           id: article.id,
           title: article.title,
@@ -35,7 +33,6 @@ const LatestArticles = () => {
           category: article.category || "عام",
           author: article.user?.psudoName || "مجهول",
         }));
-
         setArticles(formattedArticles);
       } catch (error) {
         console.error("Error fetching articles:", error);
@@ -44,7 +41,6 @@ const LatestArticles = () => {
         setLoading(false);
       }
     };
-
     fetchArticles();
   }, []);
 
