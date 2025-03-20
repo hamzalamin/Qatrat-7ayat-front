@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Bell, Search, User, ChevronDown, Home } from "lucide-react";
+import { Search, User, ChevronDown, Home } from "lucide-react";
 import Sidebar from "../../components/layout/Sidebar/Sidebar";
 import { Outlet } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -8,15 +8,14 @@ import { useNavigate } from "react-router-dom";
 
 const AdminLayout = ({ children }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate("/");
   };
-
+  console.log("useruseruser ", user);
   return (
     <div className="flex h-screen bg-neutral-50">
       <aside>
@@ -38,49 +37,6 @@ const AdminLayout = ({ children }) => {
             </div>
 
             <div className="flex items-center space-x-4">
-              <a
-                href="/"
-                key="homePage"
-                className="hover:bg-neutral-50 rounded-lg relative"
-              >
-                <Home className="h-5 w-5 text-neutral-600" />
-              </a>
-              <div className="relative">
-                <button
-                  onClick={() => setShowNotifications(!showNotifications)}
-                  className="p-2 hover:bg-neutral-50 rounded-lg relative"
-                >
-                  <Bell className="h-5 w-5 text-neutral-600" />
-                  <span className="absolute top-1 right-1 h-2 w-2 bg-primary-500 rounded-full"></span>
-                </button>
-
-                {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-neutral-100 py-2 z-50">
-                    <div className="px-4 py-2 border-b border-neutral-100">
-                      <h3 className="font-cairo font-semibold">
-                        Notifications
-                      </h3>
-                    </div>
-                    <div className="max-h-64 overflow-y-auto">
-                      <div className="px-4 py-3 hover:bg-neutral-50 cursor-pointer">
-                        <p className="text-sm font-cairo">
-                          New donor registration request
-                        </p>
-                        <p className="text-xs text-neutral-500">
-                          2 minutes ago
-                        </p>
-                      </div>
-                      <div className="px-4 py-3 hover:bg-neutral-50 cursor-pointer">
-                        <p className="text-sm font-cairo">
-                          Blood inventory alert: A+ running low
-                        </p>
-                        <p className="text-xs text-neutral-500">1 hour ago</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
               <div className="relative">
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -91,9 +47,11 @@ const AdminLayout = ({ children }) => {
                   </div>
                   <div className="hidden md:block text-left">
                     <p className="text-sm font-semibold font-cairo">
-                      Admin Name
+                      {user?.email || "Admin Name"}
                     </p>
-                    <p className="text-xs text-neutral-500">Super Admin</p>
+                    <p className="text-xs text-neutral-500">
+                    {user?.roles || "No roles"}
+                    </p>
                   </div>
                   <ChevronDown className="h-4 w-4 text-neutral-400" />
                 </button>

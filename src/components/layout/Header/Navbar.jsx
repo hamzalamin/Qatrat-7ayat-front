@@ -21,6 +21,7 @@ const Navbar = () => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
 
   const isAdmin = user && user.roles && user.roles.includes("ROLE_ADMIN");
+  const isCoordinator = user && user.roles && user.roles.includes("ROLE_COORDINATOR");
 
   useEffect(() => {}, [isAuthenticated, user]);
 
@@ -51,7 +52,7 @@ const Navbar = () => {
     },
   ];
 
-  if (isAdmin) {
+  if (isAdmin || isCoordinator) {
     menuItems.push({
       path: "/admin/dashboard",
       title: "لوحة التحكم",

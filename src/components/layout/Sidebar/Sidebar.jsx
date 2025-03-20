@@ -9,22 +9,30 @@ import {
   ChevronRight,
   Tag,
   ShieldCheck,
+  LayoutDashboard, 
 } from "lucide-react";
 import logo from '../../../assets/images/qatrat-7ayat-logo.jpg';
+import { useAuth } from "../../../context/AuthContext";
 
 
 const Sidebar = () => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const { user } = useAuth();
 
   const menuItems = [
-    { link: "/admin/dashboard", title: "Dashboard", icon: Home },
-    { link: "article-management", title: "Articles", icon: FileText }, 
-    { link: "tag-management", title: "Tags", icon: Tag }, 
-    { link: "user-management", title: "Users", icon: Users }, 
-    { link: "role-management", title: "Roles", icon: ShieldCheck }, 
-    { link: "notifications", title: "Notifications", icon: Bell }, 
-    { link: "settings", title: "Settings", icon: Settings }, 
+    { link: "/", title: "Home", icon: Home, roles: ["ROLE_ADMIN", "ROLE_COORDINATOR"] },
+    { link: "/admin/dashboard", title: "Dashboard", icon: LayoutDashboard, roles: ["ROLE_ADMIN", "ROLE_COORDINATOR"] },
+    { link: "article-management", title: "Articles", icon: FileText, roles: ["ROLE_ADMIN", "ROLE_COORDINATOR"] },
+    { link: "tag-management", title: "Tags", icon: Tag, roles: ["ROLE_ADMIN"] },
+    { link: "user-management", title: "Users", icon: Users, roles: ["ROLE_ADMIN"] },
+    { link: "role-management", title: "Roles", icon: ShieldCheck, roles: ["ROLE_ADMIN"] },
+    { link: "notifications", title: "Notifications", icon: Bell, roles: ["ROLE_ADMIN", "ROLE_COORDINATOR"] },
+    { link: "settings", title: "Settings", icon: Settings, roles: ["ROLE_ADMIN", "ROLE_COORDINATOR"] },
   ];
+
+  const filteredMenu = menuItems.filter(item =>
+    item.roles.some(role => user?.roles?.includes(role))
+  );
 
   return (
     <div
@@ -57,7 +65,7 @@ const Sidebar = () => {
       </div>
 
       <nav className="p-4 space-y-2">
-        {menuItems.map((item) => (
+        {filteredMenu.map((item) => (
           <a
             key={item.title}
             href={item.link}
