@@ -11,13 +11,14 @@ import {
   UserPlus,
   LayoutDashboard,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../../../assets/images/qatrat-7ayat-logo.jpg";
 import { useAuth } from "../../../context/AuthContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isAuthenticated, isLoading, logout } = useAuth();
 
   const isAdmin = user && user.roles && user.roles.includes("ROLE_ADMIN");
@@ -95,8 +96,8 @@ const Navbar = () => {
                 key={item.title}
                 onClick={() => navigate(item.path)}
                 className={`flex items-center space-x-2 space-x-reverse px-3 py-2 transition-colors duration-200 font-kufi ${
-                  item.path.includes("admin")
-                    ? "text-neutral-600 hover:text-primary-500"
+                  location.pathname === item.path
+                    ? "text-primary-500"
                     : "text-neutral-600 hover:text-primary-500"
                 }`}
               >
@@ -168,8 +169,8 @@ const Navbar = () => {
                 setIsOpen(false);
               }}
               className={`flex items-center space-x-2 space-x-reverse w-full px-4 py-3 text-right hover:bg-neutral-50 transition-colors duration-200 ${
-                item.path.includes("admin")
-                  ? "text-purple-600"
+                location.pathname === item.path
+                  ? "text-primary-500" 
                   : "text-neutral-600"
               }`}
             >

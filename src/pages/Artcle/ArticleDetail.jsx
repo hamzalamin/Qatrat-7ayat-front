@@ -161,17 +161,14 @@ const ArticleDetail = () => {
               )}
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-cairo font-bold text-neutral-800 mb-6 text-right">
+            <h1 className="text-3xl md:text-4xl font-cairo font-bold text-neutral-800 mb-6 text-center">
               {article.title}
             </h1>
 
-            <div className="prose prose-lg max-w-none font-kufi text-neutral-700 text-right leading-relaxed">
-              {article.content.split('\n').map((paragraph, index) => (
-                <p key={index} className="mb-4">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
+            <div
+              className="prose prose-lg max-w-none font-kufi text-neutral-700 text-right leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: article.content }}
+            />
 
             {article.tags && article.tags.length > 0 && (
               <div className="mt-8 flex flex-wrap gap-2 justify-end">

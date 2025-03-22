@@ -3,11 +3,11 @@ import { Check, X, Eye, Search, ChevronLeft, ChevronRight, AlertCircle, RefreshC
 import { useAuth } from '../../context/AuthContext';
 import ArticleService from '../../services/articleService';
 import CityService from '../../services/cityService';
+import TextEditor from '../../components/layout/helps/TextEditor';
 
 const ArticleManagement = () => {
   const { user } = useAuth();
-  console.log("susususususu", user);
-  
+
   const isAdmin = user.roles.includes('ROLE_ADMIN');
   const isCoordinator = user.roles.includes('ROLE_COORDINATOR');
 
@@ -32,10 +32,10 @@ const ArticleManagement = () => {
     const fetchArticles = async () => {
       setLoading(true);
       try {
-        const response = isCoordinator 
+        const response = isCoordinator
           ? await ArticleService.getMyArticles(pageNumber, size)
           : await ArticleService.get(pageNumber, size);
-        
+
         setArticles(response.data.content);
         setTotalPages(response.data.totalPages);
       } catch (error) {
@@ -44,7 +44,7 @@ const ArticleManagement = () => {
         setLoading(false);
       }
     };
-  
+
     fetchArticles();
   }, [pageNumber, size, isCoordinator]);
 
@@ -63,10 +63,10 @@ const ArticleManagement = () => {
 
   const handleStatusUpdate = async (id) => {
     if (!isAdmin) return;
-    
+
     try {
       await ArticleService.updateStatus(id);
-      
+
       setArticles(articles.map(article => {
         if (article.id === id) {
           let nextStatus;
@@ -77,12 +77,12 @@ const ArticleManagement = () => {
           } else if (article.status === 'REJECTED') {
             nextStatus = 'PENDING';
           }
-          
+
           return { ...article, status: nextStatus };
         }
         return article;
       }));
-      
+
       if (selectedArticle && selectedArticle.id === id) {
         let nextStatus;
         if (!selectedArticle.status || selectedArticle.status === 'PENDING') {
@@ -92,7 +92,7 @@ const ArticleManagement = () => {
         } else if (selectedArticle.status === 'REJECTED') {
           nextStatus = 'PENDING';
         }
-        
+
         setSelectedArticle({ ...selectedArticle, status: nextStatus });
       }
     } catch (error) {
@@ -102,7 +102,7 @@ const ArticleManagement = () => {
 
   const handleDelete = async (id) => {
     if (!isCoordinator) return;
-    
+
     try {
       await ArticleService.delete(id);
       setArticles(articles.filter(article => article.id !== id));
@@ -116,7 +116,7 @@ const ArticleManagement = () => {
 
   const handleEdit = (article) => {
     if (!isCoordinator) return;
-    
+
     setEditForm({
       title: article.title,
       content: article.content,
@@ -127,33 +127,14 @@ const ArticleManagement = () => {
     setIsEditing(true);
   };
 
-  const handleUpdate = async () => {
-    if (!selectedArticle || !isCoordinator) return;
-    
-    try {
-      const dataToSend = {
-        ...editForm,
-        cityId: editForm.cityId ? parseInt(editForm.cityId, 10) : null
-      };
-      
-      console.log("Sending update request with:", dataToSend);
-      
-      await ArticleService.update(dataToSend, selectedArticle.id);
-      
-      const response = await ArticleService.getMyArticles(pageNumber, size);
-      setArticles(response.data.content);
-      
-      setIsEditing(false);
-      setSelectedArticle(null);      
-    } catch (error) {
-      console.error('Failed to update article:', error);
-      alert("Failed to update article. Please try again.");
-    }
-  };
-
   const handleCreate = async () => {
     if (!isCoordinator) return;
-    
+  
+    if (!editForm.content || editForm.content.trim() === '') {
+      alert("Content cannot be empty.");
+      return;
+    }
+  
     try {
       const response = await ArticleService.create(editForm);
       setArticles([response.data, ...articles]);
@@ -163,13 +144,42 @@ const ArticleManagement = () => {
       console.error('Failed to create article:', error);
     }
   };
+  
+  const handleUpdate = async () => {
+    if (!selectedArticle || !isCoordinator) return;
+  
+    if (!editForm.content || editForm.content.trim() === '') {
+      alert("Content cannot be empty.");
+      return;
+    }
+  
+    try {
+      const dataToSend = {
+        ...editForm,
+        cityId: editForm.cityId ? parseInt(editForm.cityId, 10) : null
+      };
+  
+      console.log("Sending update request with:", dataToSend);
+  
+      await ArticleService.update(dataToSend, selectedArticle.id);
+  
+      const response = await ArticleService.getMyArticles(pageNumber, size);
+      setArticles(response.data.content);
+  
+      setIsEditing(false);
+      setSelectedArticle(null);
+    } catch (error) {
+      console.error('Failed to update article:', error);
+      alert("Failed to update article. Please try again.");
+    }
+  };
 
   const filteredArticles = articles.filter(article => {
-    const matchesSearch = article.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         searchTerm === '';
-    const matchesFilter = filter === 'all' || 
-                        (article.status?.toLowerCase() === filter.toLowerCase()) ||
-                        (!article.status && filter.toLowerCase() === 'pending');
+    const matchesSearch = article.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      searchTerm === '';
+    const matchesFilter = filter === 'all' ||
+      (article.status?.toLowerCase() === filter.toLowerCase()) ||
+      (!article.status && filter.toLowerCase() === 'pending');
     return matchesSearch && matchesFilter;
   });
 
@@ -209,7 +219,7 @@ const ArticleManagement = () => {
         icon: X
       };
     }
-    
+
     return {
       label: status,
       bgColor: 'bg-neutral-100',
@@ -248,7 +258,7 @@ const ArticleManagement = () => {
             </select>
 
             {isCoordinator && (
-              <button 
+              <button
                 className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center gap-2"
                 onClick={() => {
                   setEditForm({ title: '', content: '', imageUrl: '', cityId: '' });
@@ -294,17 +304,19 @@ const ArticleManagement = () => {
                       <td className="px-6 py-4">
                         {article.imageUrl && (
                           <div className="w-12 h-12 overflow-hidden rounded-full">
-                            <img 
-                              src={article.imageUrl} 
+                            <img
+                              src={article.imageUrl}
                               alt={article.title}
-                              className="w-full h-full object-cover" 
+                              className="w-full h-full object-cover"
                             />
                           </div>
                         )}
                       </td>
                       <td className="px-6 py-4">
                         <div className="font-cairo font-medium text-neutral-800">{article.title}</div>
-                        <div className="text-sm text-neutral-500 truncate max-w-56">{article.content?.substring(0, 100)}...</div>
+                        <div className="text-sm text-neutral-500 truncate max-w-56">
+                          {article.content?.replace(/<[^>]*>?/gm, '').substring(0, 100)}...
+                        </div>
                       </td>
                       {!isCoordinator && (
                         <td className="px-6 py-4 font-cairo text-neutral-600">
@@ -335,7 +347,7 @@ const ArticleManagement = () => {
                               <RefreshCw className="h-5 w-5" />
                             </button>
                           )}
-                          
+
                           <button
                             onClick={() => setSelectedArticle(article)}
                             className="p-2 text-secondary-500 hover:bg-secondary-50 rounded-lg transition-colors"
@@ -343,7 +355,7 @@ const ArticleManagement = () => {
                           >
                             <Eye className="h-5 w-5" />
                           </button>
-                          
+
                           {isCoordinator && (
                             <>
                               <button
@@ -456,19 +468,19 @@ const ArticleManagement = () => {
                     );
                   })()}
                 </p>
-                
+
                 {selectedArticle.imageUrl && (
                   <div className="mt-4">
-                    <img 
-                      src={selectedArticle.imageUrl} 
+                    <img
+                      src={selectedArticle.imageUrl}
                       alt={selectedArticle.title}
-                      className="w-full h-auto rounded-lg object-cover max-h-64" 
+                      className="w-full h-auto rounded-lg object-cover max-h-64"
                     />
                   </div>
                 )}
-                
+
                 <div className="prose max-w-none mt-4">
-                  <p>{selectedArticle.content}</p>
+                  <div dangerouslySetInnerHTML={{ __html: selectedArticle.content }} />
                 </div>
               </div>
               <div className="flex justify-between mt-6">
@@ -526,7 +538,7 @@ const ArticleManagement = () => {
                   <input
                     type="text"
                     value={editForm.title}
-                    onChange={(e) => setEditForm({...editForm, title: e.target.value})}
+                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
                     className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
                   />
                 </div>
@@ -535,24 +547,22 @@ const ArticleManagement = () => {
                   <input
                     type="text"
                     value={editForm.imageUrl}
-                    onChange={(e) => setEditForm({...editForm, imageUrl: e.target.value})}
+                    onChange={(e) => setEditForm({ ...editForm, imageUrl: e.target.value })}
                     className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">Content</label>
-                  <textarea
-                    value={editForm.content}
-                    onChange={(e) => setEditForm({...editForm, content: e.target.value})}
-                    rows={10}
-                    className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                  <TextEditor
+                    content={editForm.content}
+                    onChange={(content) => setEditForm({ ...editForm, content })}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">City</label>
                   <select
                     value={editForm.cityId}
-                    onChange={(e) => setEditForm({...editForm, cityId: e.target.value})}
+                    onChange={(e) => setEditForm({ ...editForm, cityId: e.target.value })}
                     className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
                   >
                     <option value="">Select a city</option>
