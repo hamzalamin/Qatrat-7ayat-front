@@ -65,9 +65,9 @@ const DonationBadge = ({ donationCount }) => {
 
   return (
     <div
-      className={`flex items-center gap-4 ${badge.bgColor} rounded-xl p-5 shadow-md border ${badge.borderColor} transition-all hover:shadow-lg`}
+      className={`flex items-center gap-4 ${badge?.bgColor} rounded-xl p-5 shadow-md border ${badge?.borderColor} transition-all hover:shadow-lg`}
     >
-      {badge.icon}
+      {badge?.icon}
       <div className="text-right">
         <p className={`font-kufi font-bold text-xl ${badge.textColor}`}>
           {badge.level}
@@ -168,7 +168,7 @@ const UserProfile = () => {
   }
 
   const selectedBloodType = user?.bloodType
-    ? bloodTypeOptions.find((bt) => bt.value === user.bloodType) || {
+    ? bloodTypeOptions.find((bt) => bt.value === user?.bloodType) || {
         label: "غير معروف",
         color: "text-neutral-500",
       }
@@ -284,7 +284,7 @@ const UserProfile = () => {
               <div className="bg-gradient-to-r from-primary-600 to-primary-500 p-6 text-white">
                 <div className="flex justify-between items-center mb-4">
                   <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                    <Droplet className={`w-8 h-8 ${selectedBloodType.color}`} />
+                    <Droplet className={`w-8 h-8 ${selectedBloodType?.color}`} />
                   </div>
                   {isEditing ? (
                     <div className="flex space-x-2">
@@ -311,32 +311,32 @@ const UserProfile = () => {
                   )}
                 </div>
                 <h2 className="text-2xl font-bold font-kufi">
-                  {user.firstName} {user.lastName}
+                  {user?.firstName} {user?.lastName}
                 </h2>
                 <p className="text-white/80 mt-1 font-ibm">
-                  {selectedBloodType.label} فصيلة الدم
+                  {selectedBloodType?.label} فصيلة الدم
                 </p>
               </div>
 
               <div className="p-4">
                 <div className="flex justify-between items-center p-3 bg-neutral-50 rounded-lg mb-3">
                   <span className="font-bold text-secondary-600">
-                    {user.city.cityName}
+                    {user.city?.cityName}
                   </span>
                   <span className="text-neutral-600">المدينة</span>
                 </div>
 
                 <div className="flex justify-between items-center p-3 bg-neutral-50 rounded-lg">
                   <span className="font-bold text-secondary-600">
-                    {user.phone}
+                    {user?.phone}
                   </span>
                   <span className="text-neutral-600">رقم الهاتف</span>
                 </div>
 
-                {user.email && (
+                {user?.email && (
                   <div className="flex justify-between items-center p-3 mt-3 bg-neutral-50 rounded-lg">
                     <span className="font-bold text-secondary-600 text-sm">
-                      {user.email}
+                      {user?.email}
                     </span>
                     <span className="text-neutral-600">البريد الإلكتروني</span>
                   </div>
@@ -345,7 +345,7 @@ const UserProfile = () => {
                 {user.psudoName && (
                   <div className="flex justify-between items-center p-3 mt-3 bg-neutral-50 rounded-lg">
                     <span className="font-bold text-secondary-600">
-                      {user.psudoName}
+                      {user?.psudoName}
                     </span>
                     <span className="text-neutral-600">الاسم المستعار</span>
                   </div>
@@ -353,7 +353,7 @@ const UserProfile = () => {
               </div>
             </div>
 
-            <DonationBadge donationCount={user.donationCount || 0} />
+            <DonationBadge donationCount={user?.donationCount || 0} />
 
             <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-neutral-200">
               <div className="bg-gradient-to-r from-accent-600 to-accent-500 p-4 text-white">
@@ -364,16 +364,16 @@ const UserProfile = () => {
                   <div className="flex items-center gap-3">
                     <Calendar className="w-6 h-6 text-accent-500" />
                     <span className="font-bold text-accent-700">
-                      {user.nextEligibleDonationDate
+                      {user?.nextEligibleDonationDate
                         ? new Date(
-                            user.nextEligibleDonationDate
+                            user?.nextEligibleDonationDate
                           ).toLocaleDateString("ar-EG")
                         : "غير متاح حالياً"}
                     </span>
                   </div>
                   <span className="text-neutral-600">تاريخ الأهلية</span>
                 </div>
-                {user.nextEligibleDonationDate && (
+                {user?.nextEligibleDonationDate && (
                   <div className="mt-4 text-sm text-neutral-600 bg-accent-50 p-3 rounded-lg border border-accent-100">
                     <p>
                       يرجى الانتظار حتى هذا التاريخ للتبرع مرة أخرى للحفاظ على
@@ -386,7 +386,7 @@ const UserProfile = () => {
 
             <div className="bg-white rounded-lg p-4 text-sm text-neutral-600 flex justify-between items-center border border-neutral-200">
               <span>تاريخ إنشاء الحساب:</span>
-              <span>{new Date(user.createdAt).toLocaleDateString()}</span>
+              <span>{new Date(user?.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
 
@@ -460,8 +460,8 @@ const UserProfile = () => {
                             اختر المدينة
                           </option>
                           {cities.map((city) => (
-                            <option key={city.id} value={city.id}>
-                              {city.cityName}
+                            <option key={city?.id} value={city?.id}>
+                              {city?.cityName}
                             </option>
                           ))}
                         </select>
@@ -518,8 +518,8 @@ const UserProfile = () => {
                           className="w-full px-4 py-3 pr-10 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white appearance-none"
                         >
                           {bloodTypeOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
+                            <option key={option?.value} value={option?.value}>
+                              {option?.label}
                             </option>
                           ))}
                         </select>
@@ -553,19 +553,19 @@ const UserProfile = () => {
                           الاسم الكامل
                         </h3>
                         <p className="font-kufi text-lg mt-1">
-                          {user.firstName} {user.lastName}
+                          {user?.firstName} {user?.lastName}
                         </p>
                       </div>
 
                       <div className="flex-1 flex flex-col items-center p-5 bg-primary-50 rounded-xl">
                         <Droplet
-                          className={`w-8 h-8 ${selectedBloodType.color} mb-2`}
+                          className={`w-8 h-8 ${selectedBloodType?.color} mb-2`}
                         />
                         <h3 className="text-primary-700 font-semibold">
                           فصيلة الدم
                         </h3>
                         <p className="font-kufi text-lg mt-1">
-                          {selectedBloodType.label}
+                          {selectedBloodType?.label}
                         </p>
                       </div>
 
@@ -575,7 +575,7 @@ const UserProfile = () => {
                           المدينة
                         </h3>
                         <p className="font-kufi text-lg mt-1">
-                          {user.city.cityName}
+                          {user?.city?.cityName}
                         </p>
                       </div>
                     </div>
@@ -623,7 +623,7 @@ const UserProfile = () => {
                       <input
                         type="password"
                         name="currentPassword"
-                        value={passwordData.currentPassword}
+                        value={passwordData?.currentPassword}
                         onChange={handlePasswordInputChange}
                         placeholder="كلمة المرور الحالية"
                         className="w-full px-4 py-3 pr-10 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
@@ -641,7 +641,7 @@ const UserProfile = () => {
                         <input
                           type="password"
                           name="newPassword"
-                          value={passwordData.newPassword}
+                          value={passwordData?.newPassword}
                           onChange={handlePasswordInputChange}
                           placeholder="كلمة المرور الجديدة"
                           className="w-full px-4 py-3 pr-10 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
@@ -658,7 +658,7 @@ const UserProfile = () => {
                         <input
                           type="password"
                           name="confirmPassword"
-                          value={passwordData.confirmPassword}
+                          value={passwordData?.confirmPassword}
                           onChange={handlePasswordInputChange}
                           placeholder="تأكيد كلمة المرور"
                           className="w-full px-4 py-3 pr-10 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"

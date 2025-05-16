@@ -5,18 +5,18 @@ import {
   Phone,
   Search,
   UserCircle,
-  Share2,
   Droplet,
   Building,
   User,
+  MessageCircle,
   Plus,
   X,
-  Hospital,
 } from "lucide-react";
 import RequestService from "../../services/requestService";
 import CityService from "../../services/cityService";
 import HospitalService from "../../services/hospitalService";
 import AuthService from "../../services/authService";
+import { useAuth } from "../../context/AuthContext";
 
 const mapBloodType = (bloodType) => {
   const bloodTypeMap = {
@@ -61,6 +61,8 @@ const AllBloodRequests = () => {
   const [pageNumber, setPageNumber] = useState(0);
   const [size, setSize] = useState(9);
   const [totalPages, setTotalPages] = useState(0);
+
+  const { user } = useAuth();
 
   const [showPopup, setShowPopup] = useState(false);
   const [formData, setFormData] = useState({
@@ -117,6 +119,7 @@ const AllBloodRequests = () => {
           bloodVolume: request.request.bloodVolume,
           urgencyLevel: mapUrgencyLevel(request.request.urgencyLevel),
           status: "active",
+          userId: request.profile.id,
         }));
 
         setRequests(requests);
@@ -516,12 +519,20 @@ const AllBloodRequests = () => {
                       {request.phone}
                     </button>
                     <div className="flex space-x-2 space-x-reverse">
-                      <button className="p-2 hover:bg-neutral-100 rounded-lg">
-                        <Share2 className="w-5 h-5 text-neutral-600" />
-                      </button>
-                      <button className="p-2 hover:bg-neutral-100 rounded-lg">
-                        <UserCircle className="w-5 h-5 text-neutral-600" />
-                      </button>
+                      {user?.id === request.userId ? (
+                        <button className="p-2 hover:bg-neutral-100 rounded-lg" title="طلبك">
+                          <UserCircle className="w-5 h-5 text-primary-500" />
+                        </button>
+                      ) : (
+                        <>
+                          <button className="p-2 hover:bg-neutral-100 rounded-lg" title="مراسلة">
+                            <MessageCircle className="w-5 h-5 text-neutral-600" />
+                          </button>
+                          <button className="p-2 hover:bg-neutral-100 rounded-lg" title="الملف الشخصي">
+                            <UserCircle className="w-5 h-5 text-neutral-600" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

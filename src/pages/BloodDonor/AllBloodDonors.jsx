@@ -5,18 +5,18 @@ import {
   Phone,
   Search,
   UserCircle,
-  Share2,
   Droplet,
   Building,
   User,
   Plus,
   X,
-  Hospital,
+  MessageCircle,
 } from "lucide-react";
 import DonorService from "../../services/donorService";
 import CityService from "../../services/cityService";
 import HospitalService from "../../services/hospitalService";
 import AuthService from "../../services/authService";
+import { useAuth } from "../../context/AuthContext";
 
 const mapBloodType = (bloodType) => {
   const bloodTypeMap = {
@@ -78,6 +78,7 @@ const AllBloodDonors = () => {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchDonors = async () => {
@@ -106,6 +107,7 @@ const AllBloodDonors = () => {
           hospitalId: donor.donor.hospital.id,
           message: donor.donor.message,
           status: "available",
+          userId: donor.donor.id,
         }));
 
         setRequests(donors);
@@ -509,12 +511,20 @@ const AllBloodDonors = () => {
                       {request.phone}
                     </button>
                     <div className="flex space-x-2 space-x-reverse">
-                      <button className="p-2 hover:bg-neutral-100 rounded-lg">
-                        <Share2 className="w-5 h-5 text-neutral-600" />
-                      </button>
-                      <button className="p-2 hover:bg-neutral-100 rounded-lg">
-                        <UserCircle className="w-5 h-5 text-neutral-600" />
-                      </button>
+                      {user?.id === request.userId ? (
+                        <button className="p-2 hover:bg-neutral-100 rounded-lg" title="طلبك">
+                          <UserCircle className="w-5 h-5 text-primary-500" />
+                        </button>
+                      ) : (
+                        <>
+                          <button className="p-2 hover:bg-neutral-100 rounded-lg" title="مراسلة">
+                            <MessageCircle className="w-5 h-5 text-neutral-600" />
+                          </button>
+                          <button className="p-2 hover:bg-neutral-100 rounded-lg" title="الملف الشخصي">
+                            <UserCircle className="w-5 h-5 text-neutral-600" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -553,11 +563,10 @@ const AllBloodDonors = () => {
                     <button
                       key={i}
                       onClick={() => setPageNumber(i)}
-                      className={`px-4 py-2 rounded-md ${
-                        i === pageNumber
+                      className={`px-4 py-2 rounded-md ${i === pageNumber
                           ? "bg-primary-500 text-white"
                           : "text-neutral-700 hover:bg-neutral-100"
-                      }`}
+                        }`}
                     >
                       {pageToShow}
                     </button>

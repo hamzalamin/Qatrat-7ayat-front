@@ -6,11 +6,12 @@ import {
   Droplet,
   Building,
   User,
-  Share2,
+  MessageCircle,
   UserCircle,
 } from "lucide-react";
 import DonorService from "../../services/donorService";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const mapBloodType = (bloodType) => {
   const bloodTypeMap = {
@@ -29,6 +30,7 @@ const mapBloodType = (bloodType) => {
 const BloodDonorsSection = () => {
   const [donors, setDonors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchDonors = async () => {
@@ -60,6 +62,7 @@ const BloodDonorsSection = () => {
           bloodType: mapBloodType(donor.profile.bloodType),
           hospital: donor.donor.hospital.name,
           message: donor.donor.message,
+          userId: donor.donor.id,
         }));
 
         setDonors(formattedDonors);
@@ -181,12 +184,20 @@ const BloodDonorsSection = () => {
                     {donor.phone}
                   </a>
                   <div className="flex space-x-2 space-x-reverse">
-                    <button className="p-2 hover:bg-neutral-100 rounded-lg">
-                      <Share2 className="w-5 h-5 text-neutral-600" />
-                    </button>
-                    <button className="p-2 hover:bg-neutral-100 rounded-lg">
-                      <UserCircle className="w-5 h-5 text-neutral-600" />
-                    </button>
+                    {user?.id === donor.userId ? (
+                      <button className="p-2 hover:bg-neutral-100 rounded-lg" title="طلبك">
+                        <UserCircle className="w-5 h-5 text-primary-500" />
+                      </button>
+                    ) : (
+                      <>
+                        <button className="p-2 hover:bg-neutral-100 rounded-lg" title="مراسلة">
+                          <MessageCircle className="w-5 h-5 text-neutral-600" />
+                        </button>
+                        <button className="p-2 hover:bg-neutral-100 rounded-lg" title="الملف الشخصي">
+                          <UserCircle className="w-5 h-5 text-neutral-600" />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

@@ -6,11 +6,12 @@ import {
   User,
   Phone,
   UserCircle,
-  Share2,
+  MessageCircle,
   Building,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import RequestService from "../../services/requestService";
+import { useAuth } from "../../context/AuthContext";
 
 const mapBloodType = (bloodType) => {
   const bloodTypeMap = {
@@ -26,6 +27,7 @@ const mapBloodType = (bloodType) => {
   return bloodTypeMap[bloodType] || bloodType;
 };
 
+
 const mapUrgencyLevel = (urgency) => {
   const urgencyMap = {
     URGENCY_LOW: "عادي",
@@ -39,6 +41,7 @@ const BloodRequestsSection = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchLastThreeRequests = async () => {
@@ -68,6 +71,7 @@ const BloodRequestsSection = () => {
           lastName: request.profile.lastName,
           pseudoName: request.profile.psudoName,
           status: "active",
+          userId: request.profile.id,
         }));
 
         setRequests(formattedRequests);
@@ -138,7 +142,7 @@ const BloodRequestsSection = () => {
             طلبات التبرع بالدم
           </h2>
           <p className="text-neutral-600 font-kufi">
-            آخر طلبات وعروض التبرع بالدم في منطقتك
+            آخر طلبات التبرع بالدم في منطقتك
           </p>
         </div>
 
@@ -206,12 +210,22 @@ const BloodRequestsSection = () => {
                     {request.contactNumber}
                   </a>
                   <div className="flex space-x-2 space-x-reverse">
-                    <button className="p-2 hover:bg-neutral-100 rounded-lg">
-                      <Share2 className="w-5 h-5 text-neutral-600" />
-                    </button>
-                    <button className="p-2 hover:bg-neutral-100 rounded-lg">
-                      <UserCircle className="w-5 h-5 text-neutral-600" />
-                    </button>
+                    <div className="flex space-x-2 space-x-reverse">
+                      {user?.id === request.userId ? (
+                        <button className="p-2 hover:bg-neutral-100 rounded-lg" title="طلبك">
+                          <UserCircle className="w-5 h-5 text-primary-500" />
+                        </button>
+                      ) : (
+                        <>
+                          <button className="p-2 hover:bg-neutral-100 rounded-lg" title="مراسلة">
+                            <MessageCircle className="w-5 h-5 text-neutral-600" />
+                          </button>
+                          <button className="p-2 hover:bg-neutral-100 rounded-lg" title="الملف الشخصي">
+                            <UserCircle className="w-5 h-5 text-neutral-600" />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

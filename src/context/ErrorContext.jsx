@@ -1,12 +1,9 @@
 import { createContext, useContext, useState } from 'react';
 
-// Create context
 const ErrorContext = createContext();
 
-// Custom hook to use the context
 export const useError = () => useContext(ErrorContext);
 
-// Provider component
 export const ErrorProvider = ({ children }) => {
   const [error, setError] = useState(null);
 

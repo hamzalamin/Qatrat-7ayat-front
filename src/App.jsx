@@ -33,6 +33,7 @@ import Error404 from "./components/layout/Exceptions/Error404";
 import RoleManagement from "./pages/Admin/RoleManagement";
 import GlobalError from "./components/layout/Exceptions/GlobalErrorHandler";
 import { ErrorProvider } from "./context/ErrorContext";
+import BloodDonorsSection from "./pages/BloodDonor/BloodDonors";
 
 function Layout({ children }) {
   const location = useLocation();
@@ -73,7 +74,7 @@ function App() {
                   <>
                     <HeroSection />
                     <BloodRequestsSection />
-                    <BloodRequestsSection />
+                    <BloodDonorsSection />
                     <BloodType />
                     <LatestArticles />
                     <DonationProcessSection />

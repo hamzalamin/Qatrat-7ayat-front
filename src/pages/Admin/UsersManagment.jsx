@@ -330,11 +330,11 @@ const UserManagement = () => {
                   <td className="px-6 py-4 font-cairo text-neutral-600">
                     {user.roleId
                       ? getRoleNameById(user.roleId).replace(/^ROLE_/, "")
-                      : typeof user.role === "object"
-                        ? (user.role.name || "").replace(/^ROLE_/, "")
-                        : typeof user.role === "string"
-                          ? user.role.replace(/^ROLE_/, "")
-                          : user.role || "Unknown"}
+                      : typeof user?.role === "object"
+                        ? (user?.role?.name || "").replace(/^ROLE_/, "")
+                        : typeof user?.role === "string"
+                          ? user?.role?.replace(/^ROLE_/, "")
+                          : user?.role || "Unknown"}
                   </td>
                   <td className="px-6 py-4 font-cairo text-neutral-600">
                     {user.cityId

@@ -14,7 +14,6 @@ const LatestArticles = () => {
       setLoading(true);
       try {
         const response = await ArticleService.getLatestPublic();
-        // Check if response.data is an array (direct data) or has content property
         const articlesData = Array.isArray(response.data) 
           ? response.data 
           : (response.data?.content || []);
