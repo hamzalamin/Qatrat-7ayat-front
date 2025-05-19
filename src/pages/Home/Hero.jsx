@@ -149,7 +149,6 @@ const HeroSection = () => {
               </GoogleMap>
             </LoadScript>
             
-            {/* Search results list */}
             {searchResults.length > 0 && (
               <div className="mt-4">
                 <h3 className="font-cairo font-bold mb-2">

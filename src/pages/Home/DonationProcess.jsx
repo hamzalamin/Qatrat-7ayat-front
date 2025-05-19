@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Clipboard,
   Droplet,
@@ -13,10 +13,73 @@ import {
   HelpCircle,
   MapPin,
   Calendar,
+  X, 
+  Search, 
 } from "lucide-react";
+import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
+
+
+const mapContainerStyle = {
+  width: '100%',
+  height: '70vh',
+};
+
+const defaultCenter = {
+  lat: 31.7917,
+  lng: -7.0926,
+};
 
 const DonationProcessSection = () => {
   const [openFaqId, setOpenFaqId] = useState(null);
+  const [showMap, setShowMap] = useState(false);
+  const [selectedCenter, setSelectedCenter] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [mapCenter, setMapCenter] = useState(defaultCenter);
+  const [mapZoom, setMapZoom] = useState(6);
+  const mapRef = useRef(null);
+  const geocoderRef = useRef(null);
+
+  const handleSearch = () => {
+    if (!searchTerm.trim()) return;
+
+    if (!geocoderRef.current) {
+      geocoderRef.current = new window.google.maps.Geocoder();
+    }
+
+    geocoderRef.current.geocode(
+      { address: searchTerm },
+      (results, status) => {
+        if (status === 'OK' && results && results.length > 0) {
+          const newResults = results.map((result, index) => ({
+            id: index,
+            name: result.formatted_address,
+            position: {
+              lat: result.geometry.location.lat(),
+              lng: result.geometry.location.lng()
+            }
+          }));
+
+          setSearchResults(newResults);
+          setMapCenter(newResults[0].position);
+          setMapZoom(12);
+
+          // If you want to keep your predefined centers too:
+          // setSearchResults([...newResults, ...donationCenters]);
+        } else {
+          setSearchResults([]);
+          alert("No results found for: " + searchTerm);
+        }
+      }
+    );
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
 
   const processSteps = [
     {
@@ -62,6 +125,32 @@ const DonationProcessSection = () => {
       details: "تبرع واحد يمكن أن ينقذ حياة ما يصل إلى ثلاثة أشخاص",
     },
   ];
+
+  const downloadForm = () => {
+    try {
+      const formUrl = process.env.PUBLIC_URL + '/Qatrat-7ayat-front/public/doc/eligibility-form.pdf';
+      const link = document.createElement('a');
+
+      fetch(formUrl)
+        .then(response => {
+          if (response.ok) {
+            link.href = formUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          } else {
+            alert('نعتذر، تعذر العثور على الاستمارة حالياً. يرجى المحاولة لاحقاً.');
+          }
+        })
+        .catch(() => {
+          alert('حدث خطأ أثناء تحميل الاستمارة. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.');
+        });
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('حدث خطأ غير متوقع');
+    }
+  };
+
 
   const faqs = [
     {
@@ -205,7 +294,11 @@ const DonationProcessSection = () => {
               ))}
             </ul>
 
-            <button className="mt-6 px-6 py-2 bg-white border border-primary-300 text-primary-600 rounded-full font-cairo font-medium text-sm hover:bg-primary-50 transition-colors duration-300 w-full flex items-center justify-center">
+
+            <button
+              onClick={downloadForm}
+              className="mt-6 px-6 py-2 bg-white border border-primary-300 text-primary-600 rounded-full font-cairo font-medium text-sm hover:bg-primary-50 transition-colors duration-300 w-full flex items-center justify-center"
+            >
               <FileText className="w-4 h-4 ml-2" />
               تحميل استمارة الأهلية الكاملة
             </button>
@@ -233,9 +326,8 @@ const DonationProcessSection = () => {
                       {faq.question}
                     </span>
                     <ChevronDown
-                      className={`w-5 h-5 text-neutral-500 transition-transform duration-200 ${
-                        openFaqId === faq.id ? "transform rotate-180" : ""
-                      }`}
+                      className={`w-5 h-5 text-neutral-500 transition-transform duration-200 ${openFaqId === faq.id ? "transform rotate-180" : ""
+                        }`}
                     />
                   </button>
 
@@ -283,6 +375,114 @@ const DonationProcessSection = () => {
         </div>
 
         <div className="text-center mt-16">
+          {showMap && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center">
+              <div className="bg-white rounded-xl p-4 w-full max-w-4xl relative shadow-xl">
+                <button
+                  onClick={() => {
+                    setShowMap(false);
+                    setSearchTerm('');
+                    setSearchResults([]);
+                  }}
+                  className="absolute top-2 left-2 text-neutral-500 hover:text-red-500"
+                >
+                  <X />
+                </button>
+
+                <h2 className="text-xl font-bold mb-4 text-center font-cairo">
+                  ابحث عن مراكز التبرع بالدم في أي مكان
+                </h2>
+
+                <div className="mb-4 flex justify-center relative">
+                  <input
+                    type="text"
+                    placeholder="ابحث عن أي مدينة في العالم"
+                    className="w-full max-w-md px-4 py-2 border border-neutral-300 rounded-md text-sm font-cairo"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                  />
+                  <button
+                    onClick={handleSearch}
+                    className="absolute left-40 top-2 text-neutral-400 hover:text-primary-500"
+                  >
+                    <Search size={25} />
+                  </button>
+                </div>
+
+                <LoadScript
+                  googleMapsApiKey="AIzaSyCYKzkInZ_yYAKTx4XcAQ8FTmFH4VQw424"
+                  libraries={['places']}
+                >
+                  <GoogleMap
+                    mapContainerStyle={mapContainerStyle}
+                    center={mapCenter}
+                    zoom={mapZoom}
+                    onLoad={(map) => {
+                      mapRef.current = map;
+                    }}
+                  >
+                    {searchResults.map((result) => (
+                      <Marker
+                        key={result.id}
+                        position={result.position}
+                        onClick={() => {
+                          setSelectedCenter(result);
+                          setMapCenter(result.position);
+                          setMapZoom(14);
+                        }}
+                      />
+                    ))}
+
+                    {selectedCenter && (
+                      <InfoWindow
+                        position={selectedCenter.position}
+                        onCloseClick={() => setSelectedCenter(null)}
+                      >
+                        <div className="text-sm font-cairo">
+                          <p className="font-bold">{selectedCenter.name}</p>
+                          <button
+                            className="mt-2 text-xs bg-primary-500 text-white px-2 py-1 rounded"
+                            onClick={() => {
+                              // Add logic to find blood centers near this location
+                              alert(`Searching for blood centers near ${selectedCenter.name}`);
+                            }}
+                          >
+                            ابحث عن مراكز التبرع القريبة
+                          </button>
+                        </div>
+                      </InfoWindow>
+                    )}
+                  </GoogleMap>
+                </LoadScript>
+
+                {/* Search results list */}
+                {searchResults.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="font-cairo font-bold mb-2">
+                      نتائج البحث ({searchResults.length})
+                    </h3>
+                    <ul className="space-y-2 max-h-40 overflow-y-auto">
+                      {searchResults.map(result => (
+                        <li
+                          key={result.id}
+                          className="font-cairo p-2 hover:bg-gray-100 cursor-pointer flex items-center"
+                          onClick={() => {
+                            setSelectedCenter(result);
+                            setMapCenter(result.position);
+                            setMapZoom(14);
+                          }}
+                        >
+                          <MapPin className="ml-2 text-primary-500" size={16} />
+                          <span>{result.name}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           <h3 className="text-xl font-bold font-cairo text-neutral-800 mb-4">
             مستعد للتبرع وإنقاذ حياة؟
           </h3>
@@ -291,10 +491,13 @@ const DonationProcessSection = () => {
               <span>احجز موعداً للتبرع</span>
               <Calendar className="w-5 h-5" />
             </button>
-            <button className="px-8 py-3 bg-secondary-500 hover:bg-secondary-600 text-white font-cairo font-bold rounded-full transition-colors duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+            <button
+                onClick={() => setShowMap(true)}
+                className="px-8 py-3 bg-secondary-500 hover:bg-secondary-600 text-white font-cairo font-bold rounded-full transition-colors duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+              >
               <span>ابحث عن أقرب مركز</span>
               <MapPin className="w-5 h-5" />
-            </button>
+              </button>
           </div>
         </div>
       </div>
