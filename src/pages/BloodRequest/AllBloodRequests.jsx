@@ -17,6 +17,7 @@ import CityService from "../../services/cityService";
 import HospitalService from "../../services/hospitalService";
 import AuthService from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
+import ChatButton from "../shared/ChatButton";
 
 const mapBloodType = (bloodType) => {
   const bloodTypeMap = {
@@ -525,9 +526,7 @@ const AllBloodRequests = () => {
                         </button>
                       ) : (
                         <>
-                          <button className="p-2 hover:bg-neutral-100 rounded-lg" title="مراسلة">
-                            <MessageCircle className="w-5 h-5 text-neutral-600" />
-                          </button>
+                          <ChatButton />
                           <button className="p-2 hover:bg-neutral-100 rounded-lg" title="الملف الشخصي">
                             <UserCircle className="w-5 h-5 text-neutral-600" />
                           </button>
@@ -572,11 +571,10 @@ const AllBloodRequests = () => {
                     <button
                       key={i}
                       onClick={() => setPageNumber(i)}
-                      className={`px-4 py-2 rounded-md ${
-                        i === pageNumber
+                      className={`px-4 py-2 rounded-md ${i === pageNumber
                           ? "bg-primary-500 text-white"
                           : "text-neutral-700 hover:bg-neutral-100"
-                      }`}
+                        }`}
                     >
                       {pageToShow}
                     </button>

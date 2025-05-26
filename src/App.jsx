@@ -34,6 +34,8 @@ import RoleManagement from "./pages/Admin/RoleManagement";
 import GlobalError from "./components/layout/Exceptions/GlobalErrorHandler";
 import { ErrorProvider } from "./context/ErrorContext";
 import BloodDonorsSection from "./pages/BloodDonor/BloodDonors";
+import LiveChatNotification from "./components/layout/chat/LiveChatNotification";
+import ChatPage from "./components/layout/chat/Chat";
 
 function Layout({ children }) {
   const location = useLocation();
@@ -78,6 +80,7 @@ function App() {
                     <BloodType />
                     <LatestArticles />
                     <DonationProcessSection />
+                    <LiveChatNotification />
                   </>
                 }
               />
@@ -87,6 +90,7 @@ function App() {
               <Route path="/all-blood-donors" element={<AllBloodDonors />} />
               <Route path="/all-articles" element={<AllArticles />} />
               <Route path="/articles/:id" element={<ArticleDetail />} />
+              <Route path="/messaging" element={<ChatPage />} />
 
               <Route
                 path="/profile"
