@@ -7,7 +7,9 @@ export const connectWebSocket = (userId, onMessageCallback, token) => {
   const stompClient = new Client({
     webSocketFactory: () => new SockJS(socketUrl),
     connectHeaders: {
-      Authorization: `Bearer ${token}`,
+      'Authorization': `Bearer ${token}`,  // Primary method
+      'X-Authorization': `Bearer ${token}`, // Fallback
+      'token': token
     },
     onConnect: () => {
       stompClient.subscribe(`/user/${userId}/queue/messages`, (message) => {
