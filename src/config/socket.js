@@ -7,8 +7,8 @@ export const connectWebSocket = (userId, onMessageCallback, token) => {
   const stompClient = new Client({
     webSocketFactory: () => new SockJS(socketUrl),
     connectHeaders: {
-      'Authorization': `Bearer ${token}`,  // Primary method
-      'X-Authorization': `Bearer ${token}`, // Fallback
+      'Authorization': `Bearer ${token}`, 
+      'X-Authorization': `Bearer ${token}`, 
       'token': token
     },
     onConnect: () => {

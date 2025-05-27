@@ -90,8 +90,16 @@ function App() {
               <Route path="/all-blood-donors" element={<AllBloodDonors />} />
               <Route path="/all-articles" element={<AllArticles />} />
               <Route path="/articles/:id" element={<ArticleDetail />} />
-              <Route path="/messaging" element={<ChatPage />} />
-
+              
+              <Route
+                path="/messaging"
+                element={
+                  <ProtectedRoute>
+                    <ChatPage />
+                  </ProtectedRoute>
+                }
+              />
+              
               <Route
                 path="/profile"
                 element={

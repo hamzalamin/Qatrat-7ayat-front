@@ -5,7 +5,6 @@ import {
   sendMessage, 
   subscribeToMessages, 
   subscribeToDisconnect,
-  getConnectionStatus 
 } from '../../../services/chatServices';
 import userService from '../../../services/userService';
 
@@ -18,11 +17,9 @@ const ChatPage = () => {
   const [error, setError] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   
-  // Refs for avoiding stale closures
   const currentReceiverIdRef = useRef(receiverId);
   const messagesRef = useRef(messages);
   
-  // Memoized user data from localStorage
   const userData = useMemo(() => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
@@ -38,7 +35,6 @@ const ChatPage = () => {
 
   const { token, email: userEmail, id: currentUserId } = userData;
 
-  // Update refs when state changes
   useEffect(() => {
     currentReceiverIdRef.current = receiverId;
   }, [receiverId]);
@@ -47,11 +43,9 @@ const ChatPage = () => {
     messagesRef.current = messages;
   }, [messages]);
 
-  // Memoized message handler to prevent recreations
   const handleIncomingMessage = useCallback((incomingMsg) => {
     console.log("Incoming WebSocket message:", incomingMsg);
     
-    // Handle both WebSocket message format and API response format
     const normalizedMsg = {
       id: incomingMsg.id || `ws-${Date.now()}-${Math.random()}`,
       content: incomingMsg.content,
@@ -66,15 +60,12 @@ const ChatPage = () => {
       )
     };
 
-    // Always add relevant messages, regardless of current chat selection
-    // This ensures messages are received in real-time even if user switches chats
     const isRelevantToUser = (
       normalizedMsg.senderId === currentUserId || 
       normalizedMsg.receiverId === currentUserId
     );
 
     if (isRelevantToUser) {
-      // Check if this message is for the currently active chat
       const currentReceiver = currentReceiverIdRef.current;
       const isForCurrentChat = currentReceiver && (
         (normalizedMsg.senderId == currentUserId && normalizedMsg.receiverId == currentReceiver) ||
@@ -83,7 +74,6 @@ const ChatPage = () => {
 
       if (isForCurrentChat) {
         setMessages(prevMessages => {
-          // Check for duplicates
           const isDuplicate = prevMessages.some(existingMsg => 
             existingMsg.id === normalizedMsg.id ||
             (existingMsg.content === normalizedMsg.content &&
@@ -96,19 +86,15 @@ const ChatPage = () => {
             return prevMessages;
           }
           
-          // Add new message and sort by timestamp
           const newMessages = [...prevMessages, normalizedMsg];
           return newMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
         });
       }
 
-      // You could also store messages for other chats in a global state or context
-      // For now, we'll just log them
       console.log('Message received for user:', normalizedMsg);
     }
   }, [currentUserId, users]);
 
-  // Initialize WebSocket connection
   useEffect(() => {
     if (!token) return;
 
@@ -129,10 +115,8 @@ const ChatPage = () => {
           }
         );
 
-        // Subscribe to message events
         messageUnsubscribe = subscribeToMessages(handleIncomingMessage);
         
-        // Subscribe to disconnect events
         disconnectUnsubscribe = subscribeToDisconnect(() => {
           setIsConnected(false);
         });
@@ -153,12 +137,10 @@ const ChatPage = () => {
     };
   }, [token, handleIncomingMessage]);
 
-  // Fetch users on component mount
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  // Fetch messages when receiver changes
   useEffect(() => {
     if (receiverId && token) {
       fetchMessages(receiverId);
@@ -173,7 +155,6 @@ const ChatPage = () => {
     try {
       const response = await userService.getAll();
       const fetchedUsers = response.data || [];
-      // Filter out current user from the list
       const otherUsers = fetchedUsers.filter(user => user.id !== currentUserId);
       setUsers(otherUsers);
     } catch (error) {
@@ -197,7 +178,6 @@ const ChatPage = () => {
       if (response.ok) {
         const data = await response.json();
         
-        // Transform API response to match expected format
         const transformedMessages = (data || []).map((msg, index) => ({
           id: msg.id || `msg-${index}-${Date.now()}`,
           content: msg.content,
@@ -211,7 +191,6 @@ const ChatPage = () => {
           receiver: msg.receiver || users.find(u => u.id === parseInt(receiverId))
         }));
         
-        // Sort by timestamp if available, otherwise by array order
         const sortedMessages = transformedMessages.sort((a, b) => {
           const timeA = new Date(a.timestamp);
           const timeB = new Date(b.timestamp);
@@ -252,7 +231,6 @@ const ChatPage = () => {
     if (success) {
       setMessage('');
       
-      // Optimistically add message to UI
       const optimisticMessage = {
         id: `temp-${Date.now()}`,
         content: messageData.content,
@@ -268,33 +246,27 @@ const ChatPage = () => {
     }
   }, [receiverId, message, isConnected, currentUserId, userEmail]);
 
-  // Optimized message type detection
   const isMyMessage = useCallback((msg) => {
-    // For API response format: if receiver.id equals currentUserId, then someone else sent it to me
     if (msg.receiver?.id === currentUserId) {
-      return false; // Someone else sent this to me
+      return false; 
     }
     
-    // For WebSocket format or when senderId is available
     if (msg.senderId === currentUserId) {
-      return true; // I sent this
+      return true; 
     }
     
-    // For API response format: if receiver.id is not currentUserId, then I sent it
     if (msg.receiver?.id && msg.receiver.id !== currentUserId) {
-      return true; // I sent this to someone else
+      return true; 
     }
     
-    return false; // Default to not my message
+    return false;
   }, [currentUserId]);
 
-  // Optimized sender name getter
   const getMessageSenderName = useCallback((msg) => {
     if (isMyMessage(msg)) {
       return 'You';
     }
     
-    // Try sender object first
     if (msg.sender?.firstName) {
       return msg.sender.firstName;
     }
@@ -303,20 +275,15 @@ const ChatPage = () => {
       return msg.sender.email;
     }
     
-    // For messages from API response format, check receiver object
-    // If receiver.id matches currentUserId, then the other person sent it
     if (msg.receiver?.id === currentUserId) {
-      // Find the sender in users list using receiverId (which would be the other person)
       const sender = users.find(u => u.id === parseInt(receiverId));
       return sender?.firstName || sender?.email || 'Unknown User';
     }
     
-    // Fallback to finding user in users list by senderId
     const sender = users.find(u => u.id === msg.senderId);
     return sender?.firstName || sender?.email || 'Unknown User';
   }, [isMyMessage, users, receiverId, currentUserId]);
 
-  // Memoized selected user info
   const selectedUser = useMemo(() => {
     return users.find(user => user.id === parseInt(receiverId));
   }, [users, receiverId]);
@@ -330,7 +297,6 @@ const ChatPage = () => {
 
   return (
     <div className="p-4 max-w-2xl mx-auto">
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">
           {selectedUser ? `Chat with ${selectedUser.firstName || selectedUser.email}` : 'Chat'}
@@ -343,7 +309,6 @@ const ChatPage = () => {
         </div>
       </div>
 
-      {/* Error Display */}
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
@@ -356,7 +321,6 @@ const ChatPage = () => {
         </div>
       )}
 
-      {/* User Selection */}
       <div className="mb-4">
         <select
           className="border border-gray-300 p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -376,7 +340,6 @@ const ChatPage = () => {
         </select>
       </div>
 
-      {/* Messages Display */}
       <div className="border border-gray-300 rounded-lg p-4 h-96 overflow-y-auto mb-4 bg-gray-50 space-y-3">
         {messages.length > 0 ? (
           messages.map((msg, index) => (
@@ -412,7 +375,6 @@ const ChatPage = () => {
         )}
       </div>
 
-      {/* Message Input */}
       <div className="flex gap-2">
         <textarea
           placeholder="Type a message... (Press Enter to send)"

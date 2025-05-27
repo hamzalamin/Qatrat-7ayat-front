@@ -1,4 +1,3 @@
-// chatServices.js - Optimized WebSocket service
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
@@ -19,7 +18,6 @@ class ChatService {
       return Promise.resolve();
     }
 
-    // Extract user ID from token or get it from localStorage
     try {
       const userData = JSON.parse(localStorage.getItem('user'));
       this.currentUserId = userData?.id;
@@ -43,7 +41,6 @@ class ChatService {
           this.reconnectAttempts = 0;
           console.log('STOMP connected successfully');
           
-          // Subscribe to personal message queue - this receives messages sent TO this user
           this.stompClient.subscribe('/user/queue/messages', (message) => {
             try {
               const body = JSON.parse(message.body);
@@ -54,7 +51,6 @@ class ChatService {
             }
           });
 
-          // Subscribe to user-specific topic - this receives messages FROM this user to others
           if (this.currentUserId) {
             this.stompClient.subscribe(`/user/${this.currentUserId}/queue/messages`, (message) => {
               try {
@@ -67,12 +63,10 @@ class ChatService {
             });
           }
 
-          // Subscribe to topic for all messages (if your backend supports this)
           this.stompClient.subscribe('/topic/messages', (message) => {
             try {
               const body = JSON.parse(message.body);
               console.log('Received topic message:', body);
-              // Only process if this user is involved in the conversation
               if (body.senderId === this.currentUserId || body.receiverId === this.currentUserId) {
                 this.notifySubscribers('message', body);
               }
@@ -131,7 +125,6 @@ class ChatService {
     }
 
     try {
-      // Ensure the message format matches your backend expectations
       const formattedMessage = {
         receiverId: parseInt(messageData.receiverId),
         content: messageData.content.trim(),
@@ -151,14 +144,12 @@ class ChatService {
     }
   }
 
-  // Subscribe to events (message, disconnect, etc.)
   subscribe(event, callback) {
     if (!this.subscribers.has(event)) {
       this.subscribers.set(event, new Set());
     }
     this.subscribers.get(event).add(callback);
     
-    // Return unsubscribe function
     return () => {
       const eventSubscribers = this.subscribers.get(event);
       if (eventSubscribers) {
@@ -185,10 +176,8 @@ class ChatService {
   }
 }
 
-// Create singleton instance
 const chatService = new ChatService();
 
-// Export service methods
 export const connectWebSocket = (token, onConnected, onError) => 
   chatService.connect(token, onConnected, onError);
 
