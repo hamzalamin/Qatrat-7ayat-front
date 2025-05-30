@@ -8,6 +8,7 @@ import {
   User,
   MessageCircle,
   UserCircle,
+  CircleEllipsis
 } from "lucide-react";
 import DonorService from "../../services/donorService";
 import { Link } from "react-router-dom";
@@ -205,14 +206,17 @@ const BloodDonorsSection = () => {
           ))}
         </div>
 
-        <div className="text-center mt-8">
+        <div className="flex justify-center items-center mt-2">
+        <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
           <Link
             to="/all-blood-donors"
-            className="inline-block bg-primary-500 hover:bg-primary-600 text-white px-8 py-3 rounded-full font-kufi transition-colors duration-200"
+            className="w-full sm:w-auto px-8 py-3 bg-white hover:bg-neutral-50 text-primary-500 border-2 border-primary-500 font-cairo font-bold rounded-full transition-colors duration-300 flex items-center justify-center gap-2"
           >
-            جميع عروض التبرع بالدم
+            <CircleEllipsis className="w-5 h-5" />
+            <span>جميع التبرعات</span>
           </Link>
         </div>
+      </div>
       </div>
     </div>
   );

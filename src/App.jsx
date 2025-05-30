@@ -13,6 +13,7 @@ import BloodRequestsSection from "./pages/BloodRequest/BloodRequests";
 import BloodType from "./pages/Home/BloodType";
 import LatestArticles from "./pages/Artcle/LatestArticle";
 import DonationProcessSection from "./pages/Home/DonationProcess";
+import QuestionsSection from "./pages/Home/Questions";
 import LoginPage from "./pages/Auth/login/Login";
 import RegistrationForm from "./pages/Auth/Register/Register";
 import AllBloodRequests from "./pages/BloodRequest/AllBloodRequests";
@@ -76,10 +77,11 @@ function App() {
                   <>
                     <HeroSection />
                     <BloodRequestsSection />
+                    <DonationProcessSection />
                     <BloodDonorsSection />
                     <BloodType />
                     <LatestArticles />
-                    <DonationProcessSection />
+                    <QuestionsSection />
                     <LiveChatNotification />
                   </>
                 }

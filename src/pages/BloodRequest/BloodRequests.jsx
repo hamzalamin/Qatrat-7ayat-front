@@ -8,6 +8,7 @@ import {
   UserCircle,
   MessageCircle,
   Building,
+  CircleEllipsis
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import RequestService from "../../services/requestService";
@@ -135,12 +136,13 @@ const BloodRequestsSection = () => {
   }
 
   return (
-    <section className="bg-neutral-50 py-12 md:py-16 px-4 border-t border-neutral-200">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-right mb-8">
-          <h2 className="text-3xl font-cairo font-bold text-neutral-800 mb-2">
+
+    <div className="bg-neutral-60 py-12 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-right mb-10">
+          <h1 className="text-4xl font-cairo font-bold text-neutral-800 mb-3">
             طلبات التبرع بالدم
-          </h2>
+          </h1>
           <p className="text-neutral-600 font-kufi">
             آخر طلبات التبرع بالدم في منطقتك
           </p>
@@ -232,17 +234,19 @@ const BloodRequestsSection = () => {
             </div>
           ))}
         </div>
-
-        <div className="text-center mt-8">
+      </div>
+      <div className="flex justify-center items-center mt-2">
+        <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
           <Link
             to="/all-blood-requests"
-            className="inline-block bg-primary-500 hover:bg-primary-600 text-white px-8 py-3 rounded-full font-kufi transition-colors duration-200"
+            className="w-full sm:w-auto px-8 py-3 bg-white hover:bg-neutral-50 text-primary-500 border-2 border-primary-500 font-cairo font-bold rounded-full transition-colors duration-300 flex items-center justify-center gap-2"
           >
-            عرض جميع الطلبات
+            <CircleEllipsis className="w-5 h-5" />
+            <span>جميع الطلبات</span>
           </Link>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 
